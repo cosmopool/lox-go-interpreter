@@ -25,7 +25,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	var position, line int
+	hasError := false
+	var position int
+	line := 1
 	endOfFile := len(fileContents)
 	for {
 		if position >= endOfFile {
@@ -57,7 +59,14 @@ func main() {
 			fmt.Println("MINUS - null")
 		case ';':
 			fmt.Println("SEMICOLON ; null")
+		default:
+			fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %s\n", line, string(character))
+			hasError = true
 		}
 		position++
 	}
+
+  if (hasError) {
+    os.Exit(65)
+  }
 }
