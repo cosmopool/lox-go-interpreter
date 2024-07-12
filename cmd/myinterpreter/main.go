@@ -59,6 +59,12 @@ func main() {
 			fmt.Println("MINUS - null")
 		case ';':
 			fmt.Println("SEMICOLON ; null")
+		case '=':
+			if nextCharIsEqual('=', &position, fileContents) {
+				fmt.Println("EQUAL_EQUAL == null")
+			} else {
+				fmt.Println("EQUAL = null")
+			}
 		default:
 			fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %s\n", line, string(character))
 			hasError = true
@@ -66,7 +72,24 @@ func main() {
 		position++
 	}
 
-  if (hasError) {
-    os.Exit(65)
-  }
+	if hasError {
+		os.Exit(65)
+	}
+
+}
+
+func nextCharIsEqual(char rune, position *int, content []byte) bool {
+  // check if it's within bounds
+	if *position >= len(content) {
+		return false
+	}
+
+	isEqual := char == rune(content[*position+1])
+	if !isEqual {
+		return false
+	}
+
+	// move scanner to the end of this token
+	*position += 1
+	return true
 }
