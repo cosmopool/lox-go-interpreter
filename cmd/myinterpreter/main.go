@@ -65,6 +65,12 @@ func main() {
 			} else {
 				fmt.Println("EQUAL = null")
 			}
+    case '!':
+			if nextCharIsEqual('=', &position, fileContents) {
+				fmt.Println("BANG_EQUAL != null")
+			} else {
+				fmt.Println("BANG ! null")
+			}
 		default:
 			fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %s\n", line, string(character))
 			hasError = true
