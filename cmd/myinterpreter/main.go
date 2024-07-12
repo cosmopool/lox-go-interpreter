@@ -60,28 +60,41 @@ func main() {
 		case ';':
 			fmt.Println("SEMICOLON ; null")
 		case '=':
-			if nextCharIsEqual('=', &position, fileContents) {
+			if moveToNextCharIfEqualsTo('=', &position, fileContents) {
 				fmt.Println("EQUAL_EQUAL == null")
 			} else {
 				fmt.Println("EQUAL = null")
 			}
-    case '!':
-			if nextCharIsEqual('=', &position, fileContents) {
+		case '!':
+			if moveToNextCharIfEqualsTo('=', &position, fileContents) {
 				fmt.Println("BANG_EQUAL != null")
 			} else {
 				fmt.Println("BANG ! null")
 			}
-    case '<':
-			if nextCharIsEqual('=', &position, fileContents) {
+		case '<':
+			if moveToNextCharIfEqualsTo('=', &position, fileContents) {
 				fmt.Println("LESS_EQUAL <= null")
 			} else {
 				fmt.Println("LESS < null")
 			}
-    case '>':
-			if nextCharIsEqual('=', &position, fileContents) {
+		case '>':
+			if moveToNextCharIfEqualsTo('=', &position, fileContents) {
 				fmt.Println("GREATER_EQUAL >= null")
 			} else {
 				fmt.Println("GREATER > null")
+			}
+		case '/':
+			if moveToNextCharIfEqualsTo('/', &position, fileContents) {
+				// move to scanner to the end of the line
+				newPos, err := movePositionTo('\n', position, fileContents)
+				if err != nil {
+					// move to the end of the file
+					position = endOfFile
+					continue
+				}
+				position = newPos
+			} else {
+				fmt.Println("SLASH / null")
 			}
 		default:
 			fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %s\n", line, string(character))
@@ -96,13 +109,15 @@ func main() {
 
 }
 
-func nextCharIsEqual(char rune, position *int, content []byte) bool {
-  // check if it's within bounds
-	if *position >= len(content) - 1 {
+// Returns a boolean if next [position] rune is equal to [targetChar].
+// If true, will move [position] by adding +1.
+func moveToNextCharIfEqualsTo(targetChar rune, position *int, content []byte) bool {
+	// check if it's within bounds
+	if *position >= len(content)-1 {
 		return false
 	}
 
-	isEqual := char == rune(content[*position+1])
+	isEqual := targetChar == rune(content[*position+1])
 	if !isEqual {
 		return false
 	}
@@ -110,4 +125,21 @@ func nextCharIsEqual(char rune, position *int, content []byte) bool {
 	// move scanner to the end of this token
 	*position += 1
 	return true
+}
+
+func movePositionTo(targetChar rune, startPosition int, content []byte) (int, error) {
+	position := startPosition
+
+	for {
+		if position >= len(content)-1 {
+			return -1, fmt.Errorf("Did not find target char")
+		}
+
+		char := rune(content[position])
+		if char == targetChar {
+			return position, nil
+		}
+
+		position++
+	}
 }
