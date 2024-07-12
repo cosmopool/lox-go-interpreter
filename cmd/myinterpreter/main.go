@@ -45,6 +45,18 @@ func main() {
 			fmt.Println("LEFT_BRACE { null")
 		case '}':
 			fmt.Println("RIGHT_BRACE } null")
+		case '*':
+			fmt.Println("STAR * null")
+		case '.':
+			fmt.Println("DOT . null")
+		case ',':
+			fmt.Println("COMMA , null")
+		case '+':
+			fmt.Println("PLUS + null")
+		case '-':
+			fmt.Println("MINUS - null")
+		case ';':
+			fmt.Println("SEMICOLON ; null")
 		}
 		position++
 	}
