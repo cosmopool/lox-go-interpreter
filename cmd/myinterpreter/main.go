@@ -80,7 +80,7 @@ func main() {
 
 func nextCharIsEqual(char rune, position *int, content []byte) bool {
   // check if it's within bounds
-	if *position >= len(content) {
+	if *position >= len(content) - 1 {
 		return false
 	}
 
