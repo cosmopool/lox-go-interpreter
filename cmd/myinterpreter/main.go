@@ -101,31 +101,31 @@ func main() {
 		case ';':
 			tokens = append(tokens, Token{SEMICOLON, ";"})
 		case '=':
-			if moveToNextCharIfEqualsTo('=', &position, fileContents) {
+			if moveToNextRuneIfEqualsTo('=', &position, fileContents) {
 				tokens = append(tokens, Token{EQUAL_EQUAL, "=="})
 			} else {
 				tokens = append(tokens, Token{EQUAL, "="})
 			}
 		case '!':
-			if moveToNextCharIfEqualsTo('=', &position, fileContents) {
+			if moveToNextRuneIfEqualsTo('=', &position, fileContents) {
 				tokens = append(tokens, Token{BANG_EQUAL, "!="})
 			} else {
 				tokens = append(tokens, Token{BANG, "!"})
 			}
 		case '<':
-			if moveToNextCharIfEqualsTo('=', &position, fileContents) {
+			if moveToNextRuneIfEqualsTo('=', &position, fileContents) {
 				tokens = append(tokens, Token{LESS_EQUAL, "<="})
 			} else {
 				tokens = append(tokens, Token{LESS, "<"})
 			}
 		case '>':
-			if moveToNextCharIfEqualsTo('=', &position, fileContents) {
+			if moveToNextRuneIfEqualsTo('=', &position, fileContents) {
 				tokens = append(tokens, Token{GREATER_EQUAL, ">="})
 			} else {
 				tokens = append(tokens, Token{GREATER, ">"})
 			}
 		case '/':
-			if moveToNextCharIfEqualsTo('/', &position, fileContents) {
+			if moveToNextRuneIfEqualsTo('/', &position, fileContents) {
 				isCommentLine = true
 			} else {
 				tokens = append(tokens, Token{SLASH, "/"})
@@ -171,13 +171,13 @@ func reportError(line int, err error) {
 
 // Returns a boolean if next [position] rune is equal to [targetChar].
 // If true, will move [position] by adding +1.
-func moveToNextCharIfEqualsTo(targetChar rune, position *int, content []byte) bool {
+func moveToNextRuneIfEqualsTo(targetRune rune, position *int, content []byte) bool {
 	// check if it's within bounds
 	if *position >= len(content)-1 {
 		return false
 	}
 
-	isEqual := targetChar == rune(content[*position+1])
+	isEqual := targetRune == rune(content[*position+1])
 	if !isEqual {
 		return false
 	}
