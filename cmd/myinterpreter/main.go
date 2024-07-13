@@ -5,11 +5,42 @@ import (
 	"os"
 )
 
+type TokenType = string
+
+const (
+	LEFT_PAREN    TokenType = "LEFT_PAREN"
+	RIGHT_PAREN   TokenType = "RIGHT_PAREN"
+	LEFT_BRACE    TokenType = "LEFT_BRACE"
+	RIGHT_BRACE   TokenType = "RIGHT_BRACE"
+	COMMA         TokenType = "COMMA"
+	DOT           TokenType = "DOT"
+	MINUS         TokenType = "MINUS"
+	PLUS          TokenType = "PLUS"
+	SEMICOLON     TokenType = "SEMICOLON"
+	SLASH         TokenType = "SLASH"
+	STAR          TokenType = "STAR"
+	BANG          TokenType = "BANG"
+	BANG_EQUAL    TokenType = "BANG_EQUAL"
+	EQUAL         TokenType = "EQUAL"
+	EQUAL_EQUAL   TokenType = "EQUAL_EQUAL"
+	GREATER       TokenType = "GREATER"
+	GREATER_EQUAL TokenType = "GREATER_EQUAL"
+	LESS          TokenType = "LESS"
+	LESS_EQUAL    TokenType = "LESS_EQUAL"
+	EOF           TokenType = "EOF"
+)
+
+type Token struct {
+	Type    TokenType
+	Literal string
+}
+
 type Error struct {
 	line int
 	err  error
 }
 
+var tokens []Token
 var errors []Error
 
 func main() {
@@ -32,75 +63,72 @@ func main() {
 		os.Exit(1)
 	}
 
+	isCommentLine := false
 	var position int
 	line := 1
 	endOfFile := len(fileContents)
 	for {
 		if position >= endOfFile {
-			fmt.Println("EOF  null")
+			tokens = append(tokens, Token{EOF, ""})
 			break
 		}
 
 		character := rune(fileContents[position])
+		if isCommentLine && character != '\n' {
+			position++
+			continue
+		}
+
 		switch character {
-		case '\n':
-			line++
 		case '(':
-			fmt.Println("LEFT_PAREN ( null")
+			tokens = append(tokens, Token{LEFT_PAREN, "("})
 		case ')':
-			fmt.Println("RIGHT_PAREN ) null")
+			tokens = append(tokens, Token{RIGHT_PAREN, ")"})
 		case '{':
-			fmt.Println("LEFT_BRACE { null")
+			tokens = append(tokens, Token{LEFT_BRACE, "{"})
 		case '}':
-			fmt.Println("RIGHT_BRACE } null")
+			tokens = append(tokens, Token{RIGHT_BRACE, "}"})
 		case '*':
-			fmt.Println("STAR * null")
+			tokens = append(tokens, Token{STAR, "*"})
 		case '.':
-			fmt.Println("DOT . null")
+			tokens = append(tokens, Token{DOT, "."})
 		case ',':
-			fmt.Println("COMMA , null")
+			tokens = append(tokens, Token{COMMA, ","})
 		case '+':
-			fmt.Println("PLUS + null")
+			tokens = append(tokens, Token{PLUS, "+"})
 		case '-':
-			fmt.Println("MINUS - null")
+			tokens = append(tokens, Token{MINUS, "-"})
 		case ';':
-			fmt.Println("SEMICOLON ; null")
+			tokens = append(tokens, Token{SEMICOLON, ";"})
 		case '=':
 			if moveToNextCharIfEqualsTo('=', &position, fileContents) {
-				fmt.Println("EQUAL_EQUAL == null")
+				tokens = append(tokens, Token{EQUAL_EQUAL, "=="})
 			} else {
-				fmt.Println("EQUAL = null")
+				tokens = append(tokens, Token{EQUAL, "="})
 			}
 		case '!':
 			if moveToNextCharIfEqualsTo('=', &position, fileContents) {
-				fmt.Println("BANG_EQUAL != null")
+				tokens = append(tokens, Token{BANG_EQUAL, "!="})
 			} else {
-				fmt.Println("BANG ! null")
+				tokens = append(tokens, Token{BANG, "!"})
 			}
 		case '<':
 			if moveToNextCharIfEqualsTo('=', &position, fileContents) {
-				fmt.Println("LESS_EQUAL <= null")
+				tokens = append(tokens, Token{LESS_EQUAL, "<="})
 			} else {
-				fmt.Println("LESS < null")
+				tokens = append(tokens, Token{LESS, "<"})
 			}
 		case '>':
 			if moveToNextCharIfEqualsTo('=', &position, fileContents) {
-				fmt.Println("GREATER_EQUAL >= null")
+				tokens = append(tokens, Token{GREATER_EQUAL, ">="})
 			} else {
-				fmt.Println("GREATER > null")
+				tokens = append(tokens, Token{GREATER, ">"})
 			}
 		case '/':
 			if moveToNextCharIfEqualsTo('/', &position, fileContents) {
-				// move to scanner to the end of the line
-				newPos, err := movePositionTo('\n', position, fileContents)
-				if err != nil {
-					// move to the end of the file
-					position = endOfFile
-					continue
-				}
-				position = newPos
+				isCommentLine = true
 			} else {
-				fmt.Println("SLASH / null")
+				tokens = append(tokens, Token{SLASH, "/"})
 			}
 		case '#':
 			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
@@ -110,20 +138,27 @@ func main() {
 			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
 		case '%':
 			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
-		case 9: // tabs
-			break
-		case 32:
-			break
+		case '\t', ' ':
+			// ignore whitespaces
+		case '\n':
+			isCommentLine = false
+			line++
 		default:
 			break
 		}
+
 		position++
+	}
+
+	// print all tokens
+	for _, token := range tokens {
+		fmt.Fprintf(os.Stdout, "%v %v null\n", token.Type, token.Literal)
 	}
 
 	// check for errors and print them all
 	if len(errors) > 0 {
 		for _, err := range errors {
-			fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", line, err.err)
+			fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", err.line, err.err)
 		}
 		os.Exit(65)
 	}
@@ -150,21 +185,4 @@ func moveToNextCharIfEqualsTo(targetChar rune, position *int, content []byte) bo
 	// move scanner to the end of this token
 	*position += 1
 	return true
-}
-
-func movePositionTo(targetChar rune, startPosition int, content []byte) (int, error) {
-	position := startPosition
-
-	for {
-		if position >= len(content)-1 {
-			return -1, fmt.Errorf("Did not find target char")
-		}
-
-		char := rune(content[position])
-		if char == targetChar {
-			return position, nil
-		}
-
-		position++
-	}
 }
