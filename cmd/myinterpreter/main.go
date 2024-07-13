@@ -29,15 +29,14 @@ const (
 	LESS_EQUAL    TokenType = "LESS_EQUAL"
 	EOF           TokenType = "EOF"
 	STRING        TokenType = "STRING"
+	COMMENT                 = "COMMENT"
+	NONE                    = "NONE"
 )
 
-type Scanning int
-
-const (
-	SCANNING_NONE Scanning = iota
-	SCANNING_STRING
-	SCANNING_COMMENT
-)
+type Literal struct {
+	Type  TokenType
+	Start int
+}
 
 type Token struct {
 	Type    TokenType
@@ -72,8 +71,8 @@ func main() {
 		os.Exit(1)
 	}
 
-  // tracks what we are scanning right now
-	scanning := SCANNING_NONE
+	// tracks what we are currentLiteral right now
+  currentLiteral := Literal{NONE, -1}
 	var position int
 	line := 1
 	endOfFile := len(fileContents)
@@ -84,7 +83,7 @@ func main() {
 		}
 
 		character := rune(fileContents[position])
-		if scanning == SCANNING_COMMENT && character != '\n' {
+		if currentLiteral.Type == COMMENT && character != '\n' {
 			position++
 			continue
 		}
@@ -136,7 +135,7 @@ func main() {
 			}
 		case '/':
 			if moveToNextRuneIfEqualsTo('/', &position, fileContents) {
-				scanning = SCANNING_COMMENT
+				currentLiteral = Literal{COMMENT, line}
 			} else {
 				tokens = append(tokens, Token{SLASH, "/"})
 			}
@@ -151,7 +150,7 @@ func main() {
 		case '\t', ' ':
 			// ignore whitespaces
 		case '\n':
-			scanning = SCANNING_NONE
+			currentLiteral = Literal{NONE, -1}
 			line++
 		default:
 			break
