@@ -5,6 +5,13 @@ import (
 	"os"
 )
 
+type Error struct {
+	line int
+	err  error
+}
+
+var errors []Error
+
 func main() {
 	if len(os.Args) < 3 {
 		fmt.Fprintln(os.Stderr, "Usage: ./your_program.sh tokenize <filename>")
@@ -25,7 +32,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	hasError := false
 	var position int
 	line := 1
 	endOfFile := len(fileContents)
@@ -96,17 +102,36 @@ func main() {
 			} else {
 				fmt.Println("SLASH / null")
 			}
+		case '#':
+			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
+		case '$':
+			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
+		case '@':
+			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
+		case '%':
+			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
+		case 9: // tabs
+			break
+		case 32:
+			break
 		default:
-			fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %s\n", line, string(character))
-			hasError = true
+			break
 		}
 		position++
 	}
 
-	if hasError {
+	// check for errors and print them all
+	if len(errors) > 0 {
+		for _, err := range errors {
+			fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", line, err.err)
+		}
 		os.Exit(65)
 	}
 
+}
+
+func reportError(line int, err error) {
+	errors = append(errors, Error{line, err})
 }
 
 // Returns a boolean if next [position] rune is equal to [targetChar].
