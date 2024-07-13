@@ -72,7 +72,7 @@ func main() {
 	}
 
 	// tracks what we are currentLiteral right now
-  currentLiteral := Literal{NONE, -1}
+	currentLiteral := emptyLiteral()
 	var position int
 	line := 1
 	endOfFile := len(fileContents)
@@ -150,13 +150,33 @@ func main() {
 		case '\t', ' ':
 			// ignore whitespaces
 		case '\n':
-			currentLiteral = Literal{NONE, -1}
+			currentLiteral = emptyLiteral()
 			line++
+		case '"':
+			switch currentLiteral.Type {
+			case NONE:
+				currentLiteral = Literal{STRING, position}
+
+			case STRING:
+				literal := string(fileContents[currentLiteral.Start : position+1])
+				tokens = append(tokens, Token{STRING, literal})
+				currentLiteral = emptyLiteral()
+
+			default:
+				reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
+			}
 		default:
-			break
 		}
 
 		position++
+	}
+
+	switch currentLiteral.Type {
+	case STRING:
+		reportError(line, fmt.Errorf("Unterminated string"))
+	case NONE:
+	default:
+		reportError(line, fmt.Errorf("Unterminated literal (%s) that started at line: %d", currentLiteral.Type, currentLiteral.Start))
 	}
 
 	// print all tokens
@@ -172,6 +192,10 @@ func main() {
 		os.Exit(65)
 	}
 
+}
+
+func emptyLiteral() Literal {
+	return Literal{NONE, -1}
 }
 
 func reportError(line int, err error) {
