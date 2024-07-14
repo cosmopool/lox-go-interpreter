@@ -33,14 +33,10 @@ const (
 	NONE                    = "NONE"
 )
 
-type Literal struct {
-	Type  TokenType
-	Start int
-}
-
 type Token struct {
 	Type    TokenType
 	Literal string
+	Name    any
 }
 
 type Error struct {
@@ -71,73 +67,70 @@ func main() {
 		os.Exit(1)
 	}
 
-	// tracks what we are currentLiteral right now
-  currentLiteral := Literal{NONE, -1}
 	var position int
 	line := 1
 	endOfFile := len(fileContents)
-	for {
-		if position >= endOfFile {
-			tokens = append(tokens, Token{EOF, ""})
-			break
-		}
-
+	for position < endOfFile {
 		character := rune(fileContents[position])
-		if currentLiteral.Type == COMMENT && character != '\n' {
-			position++
-			continue
-		}
 
 		switch character {
 		case '(':
-			tokens = append(tokens, Token{LEFT_PAREN, "("})
+			tokens = append(tokens, Token{LEFT_PAREN, "(", nil})
 		case ')':
-			tokens = append(tokens, Token{RIGHT_PAREN, ")"})
+			tokens = append(tokens, Token{RIGHT_PAREN, ")", nil})
 		case '{':
-			tokens = append(tokens, Token{LEFT_BRACE, "{"})
+			tokens = append(tokens, Token{LEFT_BRACE, "{", nil})
 		case '}':
-			tokens = append(tokens, Token{RIGHT_BRACE, "}"})
+			tokens = append(tokens, Token{RIGHT_BRACE, "}", nil})
 		case '*':
-			tokens = append(tokens, Token{STAR, "*"})
+			tokens = append(tokens, Token{STAR, "*", nil})
 		case '.':
-			tokens = append(tokens, Token{DOT, "."})
+			tokens = append(tokens, Token{DOT, ".", nil})
 		case ',':
-			tokens = append(tokens, Token{COMMA, ","})
+			tokens = append(tokens, Token{COMMA, ",", nil})
 		case '+':
-			tokens = append(tokens, Token{PLUS, "+"})
+			tokens = append(tokens, Token{PLUS, "+", nil})
 		case '-':
-			tokens = append(tokens, Token{MINUS, "-"})
+			tokens = append(tokens, Token{MINUS, "-", nil})
 		case ';':
-			tokens = append(tokens, Token{SEMICOLON, ";"})
+			tokens = append(tokens, Token{SEMICOLON, ";", nil})
 		case '=':
 			if moveToNextRuneIfEqualsTo('=', &position, fileContents) {
-				tokens = append(tokens, Token{EQUAL_EQUAL, "=="})
+				tokens = append(tokens, Token{EQUAL_EQUAL, "==", nil})
 			} else {
-				tokens = append(tokens, Token{EQUAL, "="})
+				tokens = append(tokens, Token{EQUAL, "=", nil})
 			}
 		case '!':
 			if moveToNextRuneIfEqualsTo('=', &position, fileContents) {
-				tokens = append(tokens, Token{BANG_EQUAL, "!="})
+				tokens = append(tokens, Token{BANG_EQUAL, "!=", nil})
 			} else {
-				tokens = append(tokens, Token{BANG, "!"})
+				tokens = append(tokens, Token{BANG, "!", nil})
 			}
 		case '<':
 			if moveToNextRuneIfEqualsTo('=', &position, fileContents) {
-				tokens = append(tokens, Token{LESS_EQUAL, "<="})
+				tokens = append(tokens, Token{LESS_EQUAL, "<=", nil})
 			} else {
-				tokens = append(tokens, Token{LESS, "<"})
+				tokens = append(tokens, Token{LESS, "<", nil})
 			}
 		case '>':
 			if moveToNextRuneIfEqualsTo('=', &position, fileContents) {
-				tokens = append(tokens, Token{GREATER_EQUAL, ">="})
+				tokens = append(tokens, Token{GREATER_EQUAL, ">=", nil})
 			} else {
-				tokens = append(tokens, Token{GREATER, ">"})
+				tokens = append(tokens, Token{GREATER, ">", nil})
 			}
 		case '/':
 			if moveToNextRuneIfEqualsTo('/', &position, fileContents) {
-				currentLiteral = Literal{COMMENT, line}
+				var char rune
+				for char != '\n' {
+					position++
+					if position == endOfFile {
+						break
+					}
+
+					char = rune(fileContents[position])
+				}
 			} else {
-				tokens = append(tokens, Token{SLASH, "/"})
+				tokens = append(tokens, Token{SLASH, "/", nil})
 			}
 		case '#':
 			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
@@ -150,18 +143,45 @@ func main() {
 		case '\t', ' ':
 			// ignore whitespaces
 		case '\n':
-			currentLiteral = Literal{NONE, -1}
 			line++
+		case '"':
+			startPosition := position
+			position++
+
+			var char rune
+			for char != '"' {
+				position++
+				if position >= endOfFile {
+					break
+				}
+
+				char = rune(fileContents[position])
+			}
+
+			if position >= endOfFile {
+				reportError(line, fmt.Errorf("Unterminated string."))
+				continue
+			} else {
+				literal := string(fileContents[startPosition+1 : position])
+				tokens = append(tokens, Token{STRING, `"` + literal + `"`, literal})
+			}
 		default:
-			break
 		}
 
 		position++
 	}
 
+	tokens = append(tokens, Token{EOF, "", nil})
+
 	// print all tokens
 	for _, token := range tokens {
-		fmt.Fprintf(os.Stdout, "%v %v null\n", token.Type, token.Literal)
+		var name string
+		if token.Name == nil {
+			name = "null"
+		} else {
+			name = fmt.Sprintf("%v", token.Name)
+		}
+		fmt.Fprintf(os.Stdout, "%v %s %s\n", token.Type, token.Literal, name)
 	}
 
 	// check for errors and print them all
