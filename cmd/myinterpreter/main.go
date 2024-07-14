@@ -129,6 +129,7 @@ func main() {
 
 					char = rune(fileContents[position])
 				}
+        line++
 			} else {
 				tokens = append(tokens, Token{SLASH, "/", nil})
 			}
