@@ -133,14 +133,6 @@ func main() {
 			} else {
 				tokens = append(tokens, Token{SLASH, "/", nil})
 			}
-		case '#':
-			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
-		case '$':
-			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
-		case '@':
-			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
-		case '%':
-			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
 		case '\t', ' ':
 			// ignore whitespaces
 		case '\n':
@@ -167,6 +159,7 @@ func main() {
 			literal := string(fileContents[startPosition+1 : position])
 			tokens = append(tokens, Token{STRING, `"` + literal + `"`, literal})
 		default:
+			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
 		}
 
 		position++
