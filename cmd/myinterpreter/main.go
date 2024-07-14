@@ -162,10 +162,10 @@ func main() {
 			if position >= endOfFile {
 				reportError(line, fmt.Errorf("Unterminated string."))
 				continue
-			} else {
-				literal := string(fileContents[startPosition+1 : position])
-				tokens = append(tokens, Token{STRING, `"` + literal + `"`, literal})
 			}
+
+			literal := string(fileContents[startPosition+1 : position])
+			tokens = append(tokens, Token{STRING, `"` + literal + `"`, literal})
 		default:
 		}
 
