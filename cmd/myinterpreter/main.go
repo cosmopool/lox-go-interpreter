@@ -129,6 +129,7 @@ func main() {
 
 					char = rune(fileContents[position])
 				}
+        line++
 			} else {
 				tokens = append(tokens, Token{SLASH, "/", nil})
 			}
@@ -161,11 +162,12 @@ func main() {
 			if position >= endOfFile {
 				reportError(line, fmt.Errorf("Unterminated string."))
 				continue
-			} else {
-				literal := string(fileContents[startPosition+1 : position])
-				tokens = append(tokens, Token{STRING, `"` + literal + `"`, literal})
 			}
+
+			literal := string(fileContents[startPosition+1 : position])
+			tokens = append(tokens, Token{STRING, `"` + literal + `"`, literal})
 		default:
+			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
 		}
 
 		position++
