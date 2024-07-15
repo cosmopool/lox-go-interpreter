@@ -29,14 +29,12 @@ const (
 	LESS_EQUAL    TokenType = "LESS_EQUAL"
 	EOF           TokenType = "EOF"
 	STRING        TokenType = "STRING"
-	COMMENT                 = "COMMENT"
-	NONE                    = "NONE"
 )
 
 type Token struct {
 	Type    TokenType
-	Literal string
-	Name    any
+	Lexeme  string
+	Literal any
 }
 
 type Error struct {
@@ -46,6 +44,9 @@ type Error struct {
 
 var tokens []Token
 var errors []Error
+var position int
+var fileContents []byte
+var endOfFile int
 
 func main() {
 	if len(os.Args) < 3 {
@@ -60,16 +61,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	var err error
 	filename := os.Args[2]
-	fileContents, err := os.ReadFile(filename)
+	fileContents, err = os.ReadFile(filename)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
 		os.Exit(1)
 	}
 
-	var position int
 	line := 1
-	endOfFile := len(fileContents)
+	endOfFile = len(fileContents)
 	for position < endOfFile {
 		character := rune(fileContents[position])
 
@@ -95,60 +96,53 @@ func main() {
 		case ';':
 			tokens = append(tokens, Token{SEMICOLON, ";", nil})
 		case '=':
-			if moveToNextRuneIfEqualsTo('=', &position, fileContents) {
+			if nextRuneEquals('=') {
+				advanceCursor()
 				tokens = append(tokens, Token{EQUAL_EQUAL, "==", nil})
 			} else {
 				tokens = append(tokens, Token{EQUAL, "=", nil})
 			}
 		case '!':
-			if moveToNextRuneIfEqualsTo('=', &position, fileContents) {
+			if nextRuneEquals('=') {
+				advanceCursor()
 				tokens = append(tokens, Token{BANG_EQUAL, "!=", nil})
 			} else {
 				tokens = append(tokens, Token{BANG, "!", nil})
 			}
 		case '<':
-			if moveToNextRuneIfEqualsTo('=', &position, fileContents) {
+			if nextRuneEquals('=') {
+				advanceCursor()
 				tokens = append(tokens, Token{LESS_EQUAL, "<=", nil})
 			} else {
 				tokens = append(tokens, Token{LESS, "<", nil})
 			}
 		case '>':
-			if moveToNextRuneIfEqualsTo('=', &position, fileContents) {
+			if nextRuneEquals('=') {
+				advanceCursor()
 				tokens = append(tokens, Token{GREATER_EQUAL, ">=", nil})
 			} else {
 				tokens = append(tokens, Token{GREATER, ">", nil})
-			}
-		case '/':
-			if moveToNextRuneIfEqualsTo('/', &position, fileContents) {
-				var char rune
-				for char != '\n' {
-					position++
-					if position == endOfFile {
-						break
-					}
-
-					char = rune(fileContents[position])
-				}
-        line++
-			} else {
-				tokens = append(tokens, Token{SLASH, "/", nil})
 			}
 		case '\t', ' ':
 			// ignore whitespaces
 		case '\n':
 			line++
+		case '/':
+			if nextRuneEquals('/') {
+				advanceCursor()
+				for !currentRuneEquals('\n') {
+					advanceCursor()
+				}
+				line++
+			} else {
+				tokens = append(tokens, Token{SLASH, "/", nil})
+			}
 		case '"':
 			startPosition := position
-			position++
+			advanceCursor()
 
-			var char rune
-			for char != '"' {
-				position++
-				if position >= endOfFile {
-					break
-				}
-
-				char = rune(fileContents[position])
+			for !currentRuneEquals('"') {
+				advanceCursor()
 			}
 
 			if position >= endOfFile {
@@ -157,12 +151,13 @@ func main() {
 			}
 
 			literal := string(fileContents[startPosition+1 : position])
-			tokens = append(tokens, Token{STRING, `"` + literal + `"`, literal})
+			lexeme := `"` + literal + `"`
+			tokens = append(tokens, Token{STRING, lexeme, literal})
 		default:
 			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
 		}
 
-		position++
+		advanceCursor()
 	}
 
 	tokens = append(tokens, Token{EOF, "", nil})
@@ -170,12 +165,12 @@ func main() {
 	// print all tokens
 	for _, token := range tokens {
 		var name string
-		if token.Name == nil {
+		if token.Literal == nil {
 			name = "null"
 		} else {
-			name = fmt.Sprintf("%v", token.Name)
+			name = fmt.Sprintf("%v", token.Literal)
 		}
-		fmt.Fprintf(os.Stdout, "%v %s %s\n", token.Type, token.Literal, name)
+		fmt.Fprintf(os.Stdout, "%v %s %s\n", token.Type, token.Lexeme, name)
 	}
 
 	// check for errors and print them all
@@ -192,20 +187,31 @@ func reportError(line int, err error) {
 	errors = append(errors, Error{line, err})
 }
 
-// Returns a boolean if next [position] rune is equal to [targetChar].
-// If true, will move [position] by adding +1.
-func moveToNextRuneIfEqualsTo(targetRune rune, position *int, content []byte) bool {
-	// check if it's within bounds
-	if *position >= len(content)-1 {
-		return false
+func advanceCursor() {
+	position++
+}
+
+func currentRune() rune {
+	if position >= len(fileContents) {
+		return -1
 	}
 
-	isEqual := targetRune == rune(content[*position+1])
-	if !isEqual {
-		return false
+	return rune(fileContents[position])
+}
+
+func nextRune() rune {
+	nextPosition := position + 1
+	if nextPosition >= len(fileContents) {
+		return -1
 	}
 
-	// move scanner to the end of this token
-	*position += 1
-	return true
+	return rune(fileContents[nextPosition])
+}
+
+func currentRuneEquals(target rune) bool {
+	return currentRune() == target
+}
+
+func nextRuneEquals(target rune) bool {
+	return nextRune() == target
 }
