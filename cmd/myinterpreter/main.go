@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
+	"unicode"
 )
 
 type TokenType = string
@@ -29,6 +32,7 @@ const (
 	LESS_EQUAL    TokenType = "LESS_EQUAL"
 	EOF           TokenType = "EOF"
 	STRING        TokenType = "STRING"
+	NUMBER        TokenType = "NUMBER"
 )
 
 type Token struct {
@@ -143,18 +147,28 @@ func main() {
 
 			for !currentRuneEquals('"') {
 				advanceCursor()
+				if position >= endOfFile {
+					break
+				}
 			}
 
 			if position >= endOfFile {
 				reportError(line, fmt.Errorf("Unterminated string."))
-				continue
+				break
 			}
 
 			literal := string(fileContents[startPosition+1 : position])
 			lexeme := `"` + literal + `"`
 			tokens = append(tokens, Token{STRING, lexeme, literal})
 		default:
-			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
+			if unicode.IsDigit(character) {
+				tokenizeNumber()
+				// the tokenizeNumber already advances the cursor
+				// that's why we must go to the next iteration manually
+				continue
+			} else {
+				reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
+			}
 		}
 
 		advanceCursor()
@@ -164,13 +178,24 @@ func main() {
 
 	// print all tokens
 	for _, token := range tokens {
-		var name string
+		if token.Type == NUMBER {
+			var format string
+			if strings.Contains(token.Lexeme, ".") {
+				format = "%v %s %g\n"
+			} else {
+				format = "%v %s %.1f\n"
+			}
+			fmt.Fprintf(os.Stdout, format, token.Type, token.Lexeme, token.Literal)
+			continue
+		}
+
+		var name any
 		if token.Literal == nil {
 			name = "null"
 		} else {
 			name = fmt.Sprintf("%v", token.Literal)
 		}
-		fmt.Fprintf(os.Stdout, "%v %s %s\n", token.Type, token.Lexeme, name)
+		fmt.Fprintf(os.Stdout, "%v %s %v\n", token.Type, token.Lexeme, name)
 	}
 
 	// check for errors and print them all
@@ -214,4 +239,28 @@ func currentRuneEquals(target rune) bool {
 
 func nextRuneEquals(target rune) bool {
 	return nextRune() == target
+}
+
+func tokenizeNumber() {
+	startPosition := position
+
+	for unicode.IsDigit(currentRune()) {
+		advanceCursor()
+	}
+
+	if currentRune() == '.' && unicode.IsDigit(nextRune()) {
+		advanceCursor()
+
+		for unicode.IsDigit(currentRune()) {
+			advanceCursor()
+		}
+	}
+
+	lexeme := string(fileContents[startPosition:position])
+	literal, err := strconv.ParseFloat(lexeme, 64)
+	if err != nil {
+		panic(err)
+	}
+	token := Token{NUMBER, lexeme, literal}
+	tokens = append(tokens, token)
 }
