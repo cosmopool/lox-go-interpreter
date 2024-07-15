@@ -31,6 +31,7 @@ const (
 	EOF           tokenType = "EOF"
 	STRING        tokenType = "STRING"
 	NUMBER        tokenType = "NUMBER"
+	IDENTIFIER    tokenType = "IDENTIFIER"
 )
 
 type Token struct {
@@ -153,6 +154,11 @@ func ScanFile(fileContents []byte) ([]Token, []Error) {
 				continue
 			}
 
+			if unicode.IsLetter(character) || character == '_' {
+				tokenizeIdentifier()
+				continue
+			}
+
 			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
 		}
 
@@ -219,4 +225,18 @@ func tokenizeNumber() {
 	}
 	token := Token{NUMBER, lexeme, literal}
 	tokens = append(tokens, token)
+}
+
+func isAlphaNumeric(char rune) bool {
+	return unicode.IsLetter(char) || unicode.IsDigit(char)
+}
+
+func tokenizeIdentifier() {
+	startPos := position
+	for isAlphaNumeric(currentRune()) {
+		advanceCursor()
+	}
+
+	lexeme := string(contents[startPos:position])
+	tokens = append(tokens, Token{IDENTIFIER, lexeme, nil})
 }
