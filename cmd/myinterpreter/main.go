@@ -30,7 +30,14 @@ func main() {
 
 	tokens, errors := scanner.ScanFile(fileContents)
 
-	// print all tokens
+	printTokens(tokens)
+	printErrors(errors)
+	if len(errors) > 0 {
+		os.Exit(65)
+	}
+}
+
+func printTokens(tokens []scanner.Token) {
 	for _, token := range tokens {
 		if token.Type == scanner.NUMBER {
 			var format string
@@ -51,12 +58,10 @@ func main() {
 		}
 		fmt.Fprintf(os.Stdout, "%v %s %s\n", token.Type, token.Lexeme, name)
 	}
+}
 
-	// check for errors and print them all
-	if len(errors) > 0 {
-		for _, err := range errors {
-			fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", err.Line, err.Err)
-		}
-		os.Exit(65)
+func printErrors(errors []scanner.Error) {
+	for _, err := range errors {
+		fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", err.Line, err.Err)
 	}
 }
