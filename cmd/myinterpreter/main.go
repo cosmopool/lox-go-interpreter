@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"unicode"
 )
 
 type TokenType = string
@@ -29,6 +31,7 @@ const (
 	LESS_EQUAL    TokenType = "LESS_EQUAL"
 	EOF           TokenType = "EOF"
 	STRING        TokenType = "STRING"
+	NUMBER        TokenType = "NUMBER"
 )
 
 type Token struct {
@@ -154,7 +157,14 @@ func main() {
 			lexeme := `"` + literal + `"`
 			tokens = append(tokens, Token{STRING, lexeme, literal})
 		default:
-			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
+			if unicode.IsDigit(character) {
+				tokenizeNumber()
+				// the tokenizeNumber already advances the cursor
+				// that's why we must go to the next iteration manually
+				continue
+			} else {
+				reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
+			}
 		}
 
 		advanceCursor()
@@ -214,4 +224,28 @@ func currentRuneEquals(target rune) bool {
 
 func nextRuneEquals(target rune) bool {
 	return nextRune() == target
+}
+
+func tokenizeNumber() {
+	startPosition := position
+
+	for unicode.IsDigit(currentRune()) {
+		advanceCursor()
+	}
+
+	if currentRune() == '.' && unicode.IsDigit(nextRune()) {
+		advanceCursor()
+
+		for unicode.IsDigit(nextRune()) {
+			advanceCursor()
+		}
+	}
+
+	lexeme := string(fileContents[startPosition:position])
+	literal, err := strconv.ParseFloat(lexeme, 64)
+	if err != nil {
+		panic(err)
+	}
+	token := Token{NUMBER, lexeme, literal}
+	tokens = append(tokens, token)
 }
