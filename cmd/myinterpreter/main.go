@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"unicode"
 )
 
 type TokenType = string
@@ -29,14 +31,13 @@ const (
 	LESS_EQUAL    TokenType = "LESS_EQUAL"
 	EOF           TokenType = "EOF"
 	STRING        TokenType = "STRING"
-	COMMENT                 = "COMMENT"
-	NONE                    = "NONE"
+	NUMBER        TokenType = "NUMBER"
 )
 
 type Token struct {
 	Type    TokenType
-	Literal string
-	Name    any
+	Lexeme  string
+	Literal any
 }
 
 type Error struct {
@@ -129,7 +130,7 @@ func main() {
 
 					char = rune(fileContents[position])
 				}
-        line++
+				line++
 			} else {
 				tokens = append(tokens, Token{SLASH, "/", nil})
 			}
@@ -158,6 +159,26 @@ func main() {
 
 			literal := string(fileContents[startPosition+1 : position])
 			tokens = append(tokens, Token{STRING, `"` + literal + `"`, literal})
+		case '0':
+			tokenizeNumber(&position, fileContents)
+		case '1':
+			tokenizeNumber(&position, fileContents)
+		case '2':
+			tokenizeNumber(&position, fileContents)
+		case '3':
+			tokenizeNumber(&position, fileContents)
+		case '4':
+			tokenizeNumber(&position, fileContents)
+		case '5':
+			tokenizeNumber(&position, fileContents)
+		case '6':
+			tokenizeNumber(&position, fileContents)
+		case '7':
+			tokenizeNumber(&position, fileContents)
+		case '8':
+			tokenizeNumber(&position, fileContents)
+		case '9':
+			tokenizeNumber(&position, fileContents)
 		default:
 			reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
 		}
@@ -170,12 +191,12 @@ func main() {
 	// print all tokens
 	for _, token := range tokens {
 		var name string
-		if token.Name == nil {
+		if token.Literal == nil {
 			name = "null"
 		} else {
-			name = fmt.Sprintf("%v", token.Name)
+			name = fmt.Sprintf("%v", token.Literal)
 		}
-		fmt.Fprintf(os.Stdout, "%v %s %s\n", token.Type, token.Literal, name)
+		fmt.Fprintf(os.Stdout, "%v %s %s\n", token.Type, token.Lexeme, name)
 	}
 
 	// check for errors and print them all
@@ -208,4 +229,25 @@ func moveToNextRuneIfEqualsTo(targetRune rune, position *int, content []byte) bo
 	// move scanner to the end of this token
 	*position += 1
 	return true
+}
+
+func tokenizeNumber(position *int, content []byte) {
+	contentLength := len(content)
+	startPosition := *position
+
+	char := rune(content[*position])
+	for unicode.IsDigit(char) || char == '.' {
+		if *position >= contentLength {
+			break
+		}
+		*position++
+		char = rune(content[*position])
+	}
+
+	lexeme := string(content[startPosition:*position])
+	literal, err := strconv.ParseFloat(lexeme, 64)
+	if err != nil {
+		panic(err)
+	}
+	tokens = append(tokens, Token{NUMBER, lexeme, literal})
 }
