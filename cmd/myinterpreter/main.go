@@ -130,9 +130,14 @@ func main() {
 		case '/':
 			if nextRuneEquals('/') {
 				advanceCursor()
+
 				for !currentRuneEquals('\n') {
 					advanceCursor()
+					if position >= endOfFile {
+						break
+					}
 				}
+
 				line++
 			} else {
 				tokens = append(tokens, Token{SLASH, "/", nil})
@@ -143,11 +148,14 @@ func main() {
 
 			for !currentRuneEquals('"') {
 				advanceCursor()
+				if position >= endOfFile {
+					break
+				}
 			}
 
 			if position >= endOfFile {
 				reportError(line, fmt.Errorf("Unterminated string."))
-				continue
+				break
 			}
 
 			literal := string(fileContents[startPosition+1 : position])
