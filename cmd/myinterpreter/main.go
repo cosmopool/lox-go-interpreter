@@ -37,15 +37,27 @@ func main() {
 	}
 }
 
+func formatFloat(token scanner.Token) string {
+	split := strings.Split(token.Lexeme, ".")
+	if len(split) == 1 {
+		return "%v %s %.1f\n"
+	}
+
+	decimalPart := strings.Join(split[len(split)-1:], "")
+	decimalPart = strings.ReplaceAll(decimalPart, "0", "")
+
+	if decimalPart == "" {
+		return "%v %s %.1f\n"
+	}
+
+	return "%v %s %g\n"
+
+}
+
 func printTokens(tokens []scanner.Token) {
 	for _, token := range tokens {
 		if token.Type == scanner.NUMBER {
-			var format string
-			if strings.Contains(token.Lexeme, ".") {
-				format = "%v %s %g\n"
-			} else {
-				format = "%v %s %.1f\n"
-			}
+			format := formatFloat(token)
 			fmt.Fprintf(os.Stdout, format, token.Type, token.Lexeme, token.Literal)
 			continue
 		}
