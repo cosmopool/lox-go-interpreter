@@ -38,12 +38,12 @@ func main() {
 }
 
 func formatFloat(token scanner.Token) string {
-	split := strings.Split(token.Lexeme, ".")
-	if len(split) == 1 {
+	separated := strings.Split(token.Lexeme, ".")
+	if len(separated) == 1 {
 		return "%v %s %.1f\n"
 	}
 
-	decimalPart := strings.Join(split[len(split)-1:], "")
+	decimalPart := separated[len(separated)-1]
 	decimalPart = strings.ReplaceAll(decimalPart, "0", "")
 
 	if decimalPart == "" {
