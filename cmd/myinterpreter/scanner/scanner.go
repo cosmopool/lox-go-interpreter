@@ -34,6 +34,27 @@ const (
 	IDENTIFIER    tokenType = "IDENTIFIER"
 )
 
+func keywords() map[string]tokenType {
+	return map[string]tokenType{
+		"and":    "AND",
+		"class":  "CLASS",
+		"else":   "ELSE",
+		"false":  "FALSE",
+		"for":    "FOR",
+		"fun":    "FUN",
+		"if":     "IF",
+		"nil":    "NIL",
+		"or":     "OR",
+		"print":  "PRINT",
+		"return": "RETURN",
+		"super":  "SUPER",
+		"this":   "THIS",
+		"true":   "TRUE",
+		"var":    "VAR",
+		"while":  "WHILE",
+	}
+}
+
 type Token struct {
 	Type    tokenType
 	Lexeme  string
@@ -154,7 +175,7 @@ func ScanFile(fileContents []byte) ([]Token, []Error) {
 				continue
 			} else if unicode.IsLetter(character) || character == '_' {
 				tokenizeIdentifier()
-        continue
+				continue
 			} else {
 				reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
 			}
@@ -236,5 +257,14 @@ func tokenizeIdentifier() {
 	}
 
 	lexeme := string(contents[startPos:position])
-	tokens = append(tokens, Token{IDENTIFIER, lexeme, nil})
+
+	var tokenType string
+	keyword := keywords()[lexeme]
+	if keyword == "" {
+		tokenType = IDENTIFIER
+	} else {
+		tokenType = keyword
+	}
+
+	tokens = append(tokens, Token{tokenType, lexeme, nil})
 }
