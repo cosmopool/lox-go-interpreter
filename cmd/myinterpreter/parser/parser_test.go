@@ -105,3 +105,20 @@ func TestGroupingEmptyParentheses(t *testing.T) {
 		t.Fatal("was expecting a empty group error, but didn't get one")
 	}
 }
+
+func TestFactor(t *testing.T) {
+	tokens := []scanner.Token{
+		{Type: scanner.NUMBER, Lexeme: "43.0", Literal: 43},
+		{Type: scanner.STAR, Lexeme: "*", Literal: nil},
+		{Type: scanner.NUMBER, Lexeme: "72.0", Literal: 72},
+		{Type: scanner.SLASH, Lexeme: "/", Literal: nil},
+		{Type: scanner.NUMBER, Lexeme: "48.0", Literal: 48},
+	}
+
+	parser := Parser{Tokens: tokens}
+	expr, err := parser.expression()
+	if err != nil {
+		t.Fatalf("was not expecting any errors, but got: %v", err)
+	}
+	fmt.Println(expr)
+}
