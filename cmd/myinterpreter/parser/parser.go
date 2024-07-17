@@ -48,7 +48,7 @@ func (p *Parser) expression() (Expression, error) {
 }
 
 func (p *Parser) term() (Expression, error) {
-	expr, err := p.unary()
+	expr, err := p.factor()
 	if err != nil {
 		return expr, err
 	}
@@ -66,62 +66,73 @@ func (p *Parser) term() (Expression, error) {
 	return expr, nil
 }
 
-func (p *Parser) unary() (Expression, error) {
-	expr, err := p.primary()
+func (p *Parser) factor() (Expression, error) {
+	expr, err := p.unary()
 	if err != nil {
 		return expr, err
 	}
 
-	if p.match(scanner.BANG, scanner.MINUS) {
+	for p.match(scanner.SLASH, scanner.STAR) {
 		operator := p.previous()
-		right, err := p.expression()
+		right, err := p.primary()
 		if err != nil {
-			return nil, err
+			return expr, err
 		}
 
-		return Unary{Operator: operator, Right: right}, nil
+		expr = Binary{Left: expr, Operator: operator, Right: right}
 	}
 
 	return expr, nil
 }
 
+func (p *Parser) unary() (Expression, error) {
+	if !p.match(scanner.BANG, scanner.MINUS) {
+		return p.primary()
+	}
+
+	operator := p.previous()
+	right, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+
+	return Unary{Operator: operator, Right: right}, nil
+}
+
 func (p *Parser) primary() (Expression, error) {
-	if p.match(scanner.FALSE) {
-		return Literal{Value: false}, nil
-	}
+	if p.match(scanner.FALSE, scanner.TRUE, scanner.NIL, scanner.NUMBER, scanner.STRING) {
+		literal := Literal{Value: p.previous().Literal}
 
-	if p.match(scanner.TRUE) {
-		return Literal{Value: true}, nil
-	}
-
-	if p.match(scanner.NIL) {
-		return Literal{Value: nil}, nil
-	}
-
-	if p.match(scanner.NUMBER, scanner.STRING) {
-		return Literal{Value: p.previous().Literal}, nil
-	}
-
-	if p.match(scanner.LEFT_PAREN) {
-		expr, err := p.expression()
-		if err != nil {
-			return expr, err
+		if p.current().Type != scanner.LEFT_PAREN {
+			return literal, nil
 		}
 
-		if expr == nil {
-			return nil, fmt.Errorf("Empty group")
-		}
-
-		if p.current().Type == scanner.RIGHT_PAREN {
-			p.advance()
-		} else {
-
-			return expr, fmt.Errorf("Expect ')' after expression.")
-		}
-		return Grouping{Expr: expr}, nil
+		return p.parseGroup()
 	}
 
-	return nil, nil
+	return p.parseGroup()
+}
+
+func (p *Parser) parseGroup() (Expression, error) {
+	if !p.match(scanner.LEFT_PAREN) {
+		return nil, nil
+	}
+
+	expr, err := p.expression()
+	if err != nil {
+		return expr, err
+	}
+
+	if expr == nil {
+		return nil, fmt.Errorf("Empty group")
+	}
+
+	if p.current().Type != scanner.RIGHT_PAREN {
+		return nil, fmt.Errorf("Expect ')' after expression.")
+	}
+
+	p.advance()
+	return Grouping{Expr: expr}, nil
 }
 
 func (p *Parser) Parse() ([]Expression, error) {
