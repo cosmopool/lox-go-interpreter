@@ -48,7 +48,7 @@ func (p *Parser) expression() (Expression, error) {
 }
 
 func (p *Parser) term() (Expression, error) {
-	expr, err := p.primary()
+	expr, err := p.unary()
 	if err != nil {
 		return expr, err
 	}
@@ -65,6 +65,26 @@ func (p *Parser) term() (Expression, error) {
 
 	return expr, nil
 }
+
+func (p *Parser) unary() (Expression, error) {
+	expr, err := p.primary()
+	if err != nil {
+		return expr, err
+	}
+
+	if p.match(scanner.BANG, scanner.MINUS) {
+		operator := p.previous()
+		right, err := p.expression()
+		if err != nil {
+			return nil, err
+		}
+
+		return Unary{Operator: operator, Right: right}, nil
+	}
+
+	return expr, nil
+}
+
 
 func (p *Parser) primary() (Expression, error) {
 	if p.match(scanner.FALSE) {
@@ -98,7 +118,7 @@ func (p *Parser) primary() (Expression, error) {
 		return Grouping{Expr: expr}, nil
 	}
 
-	return nil, fmt.Errorf("Unrecognized Token: %v", p.current())
+	return nil, nil
 }
 
 func (p *Parser) Parse() ([]Expression, error) {

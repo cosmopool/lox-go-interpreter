@@ -48,6 +48,9 @@ type Unary struct {
 }
 
 func (u Unary) Expression() {}
+func (u Unary) String() string {
+	return fmt.Sprintf("(%s %v)", u.Operator.Lexeme, u.Right)
+}
 
 type Error struct {
 	Line int
