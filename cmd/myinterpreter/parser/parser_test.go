@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -88,6 +89,19 @@ func TestPrimaryIterateOverTokens(t *testing.T) {
 	}
 	_, isGroup := expr.(Grouping)
 	if !isGroup {
-    t.Fatalf("should receive a group, but got: %v", expr)
+		t.Fatalf("should receive a group, but got: %v", expr)
+	}
+}
+
+func TestGroupingEmptyParentheses(t *testing.T) {
+	tokens := []scanner.Token{
+		{Type: scanner.LEFT_PAREN, Lexeme: "(", Literal: nil},
+		{Type: scanner.RIGHT_PAREN, Lexeme: ")", Literal: nil},
+	}
+
+	parser := Parser{Tokens: tokens}
+	_, err := parser.expression()
+	if err == fmt.Errorf("Empty group") {
+		t.Fatal("was expecting a empty group error, but didn't get one")
 	}
 }
