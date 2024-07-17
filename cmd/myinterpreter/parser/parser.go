@@ -44,7 +44,26 @@ func (p *Parser) match(tokenTypes ...string) bool {
 }
 
 func (p *Parser) expression() (Expression, error) {
-	return p.term()
+	return p.unary()
+}
+
+func (p *Parser) unary() (Expression, error) {
+	expr, err := p.term()
+	if err != nil {
+		return expr, err
+	}
+
+	if p.match(scanner.BANG, scanner.MINUS) {
+		operator := p.current()
+		right, err := p.expression()
+		if err != nil {
+			return nil, err
+		}
+
+		return Unary{Operator: operator, Right: right}, nil
+	}
+
+	return expr, nil
 }
 
 func (p *Parser) term() (Expression, error) {
