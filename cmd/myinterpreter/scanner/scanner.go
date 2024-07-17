@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"unicode"
+
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/utils"
 )
 
 type tokenType = string
@@ -76,6 +78,10 @@ type Token struct {
 	Type    tokenType
 	Lexeme  string
 	Literal any
+}
+
+func (t Token) String() string {
+	return fmt.Sprintf("%v %s %v\n", t.Type, t.Lexeme, utils.FloatToString(t.Literal))
 }
 
 type Error struct {

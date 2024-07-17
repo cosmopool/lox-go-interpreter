@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/scanner"
 )
@@ -37,38 +36,9 @@ func main() {
 	}
 }
 
-func formatFloat(token scanner.Token) string {
-	separated := strings.Split(token.Lexeme, ".")
-	if len(separated) == 1 {
-		return "%v %s %.1f\n"
-	}
-
-	decimalPart := separated[len(separated)-1]
-	decimalPart = strings.ReplaceAll(decimalPart, "0", "")
-
-	if decimalPart == "" {
-		return "%v %s %.1f\n"
-	}
-
-	return "%v %s %g\n"
-
-}
-
 func printTokens(tokens []scanner.Token) {
 	for _, token := range tokens {
-		if token.Type == scanner.NUMBER {
-			format := formatFloat(token)
-			fmt.Fprintf(os.Stdout, format, token.Type, token.Lexeme, token.Literal)
-			continue
-		}
-
-		var name string
-		if token.Literal == nil {
-			name = "null"
-		} else {
-			name = fmt.Sprintf("%v", token.Literal)
-		}
-		fmt.Fprintf(os.Stdout, "%v %s %s\n", token.Type, token.Lexeme, name)
+		fmt.Print(token)
 	}
 }
 
