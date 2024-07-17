@@ -48,7 +48,7 @@ func (p *Parser) expression() (Expression, error) {
 }
 
 func (p *Parser) term() (Expression, error) {
-	expr, err := p.unary()
+	expr, err := p.factor()
 	if err != nil {
 		return expr, err
 	}
@@ -64,6 +64,25 @@ func (p *Parser) term() (Expression, error) {
 	}
 
 	return expr, nil
+}
+
+func (p *Parser) factor() (Expression, error) {
+	expr, err := p.unary()
+	if err != nil {
+		return expr, err
+	}
+
+	if !p.match(scanner.SLASH, scanner.STAR) {
+		return expr, nil
+	}
+
+	operator := p.previous()
+	right, err := p.primary()
+	if err != nil {
+		return expr, err
+	}
+
+	return Binary{Left: expr, Operator: operator, Right: right}, nil
 }
 
 func (p *Parser) unary() (Expression, error) {
