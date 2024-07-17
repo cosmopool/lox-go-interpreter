@@ -7,6 +7,7 @@ import (
 )
 
 type tokenType = string
+type keyword = string
 
 const (
 	LEFT_PAREN    tokenType = "LEFT_PAREN"
@@ -32,26 +33,42 @@ const (
 	STRING        tokenType = "STRING"
 	NUMBER        tokenType = "NUMBER"
 	IDENTIFIER    tokenType = "IDENTIFIER"
+	AND           keyword   = "AND"
+	CLASS         keyword   = "CLASS"
+	ELSE          keyword   = "ELSE"
+	FALSE         keyword   = "FALSE"
+	FOR           keyword   = "FOR"
+	FUN           keyword   = "FUN"
+	IF            keyword   = "IF"
+	NIL           keyword   = "NIL"
+	OR            keyword   = "OR"
+	PRINT         keyword   = "PRINT"
+	RETURN        keyword   = "RETURN"
+	SUPER         keyword   = "SUPER"
+	THIS          keyword   = "THIS"
+	TRUE          keyword   = "TRUE"
+	VAR           keyword   = "VAR"
+	WHILE         keyword   = "WHILE"
 )
 
-func keywords() map[string]tokenType {
+func Keywords() map[string]tokenType {
 	return map[string]tokenType{
-		"and":    "AND",
-		"class":  "CLASS",
-		"else":   "ELSE",
-		"false":  "FALSE",
-		"for":    "FOR",
-		"fun":    "FUN",
-		"if":     "IF",
-		"nil":    "NIL",
-		"or":     "OR",
-		"print":  "PRINT",
-		"return": "RETURN",
-		"super":  "SUPER",
-		"this":   "THIS",
-		"true":   "TRUE",
-		"var":    "VAR",
-		"while":  "WHILE",
+		"and":    AND,
+		"class":  CLASS,
+		"else":   ELSE,
+		"false":  FALSE,
+		"for":    FOR,
+		"fun":    FUN,
+		"if":     IF,
+		"nil":    NIL,
+		"or":     OR,
+		"print":  PRINT,
+		"return": RETURN,
+		"super":  SUPER,
+		"this":   THIS,
+		"true":   TRUE,
+		"var":    VAR,
+		"while":  WHILE,
 	}
 }
 
@@ -259,7 +276,7 @@ func tokenizeIdentifier() {
 	lexeme := string(contents[startPos:position])
 
 	var tokenType string
-	keyword := keywords()[lexeme]
+	keyword := Keywords()[lexeme]
 	if keyword == "" {
 		tokenType = IDENTIFIER
 	} else {
