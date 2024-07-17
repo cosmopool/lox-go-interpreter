@@ -5,7 +5,15 @@ import (
 	"strings"
 )
 
-func FloatToString(variable interface{}) string {
+func VariableToString(variable interface{}, toNull bool) string {
+	if variable == nil && toNull {
+		return "null"
+	}
+
+  if variable == nil {
+    return "nil"
+  }
+
 	_, isFloat := variable.(float64)
 	if !isFloat {
 		return fmt.Sprint(variable)

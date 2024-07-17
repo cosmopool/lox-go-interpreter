@@ -81,7 +81,7 @@ type Token struct {
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("%v %s %v\n", t.Type, t.Lexeme, utils.FloatToString(t.Literal))
+	return fmt.Sprintf("%v %s %v\n", t.Type, t.Lexeme, utils.VariableToString(t.Literal, true))
 }
 
 type Error struct {
