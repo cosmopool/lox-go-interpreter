@@ -85,7 +85,6 @@ func (p *Parser) unary() (Expression, error) {
 	return expr, nil
 }
 
-
 func (p *Parser) primary() (Expression, error) {
 	if p.match(scanner.FALSE) {
 		return Literal{Value: false}, nil
@@ -107,6 +106,10 @@ func (p *Parser) primary() (Expression, error) {
 		expr, err := p.expression()
 		if err != nil {
 			return expr, err
+		}
+
+		if expr == nil {
+			return nil, fmt.Errorf("Empty group")
 		}
 
 		if p.current().Type == scanner.RIGHT_PAREN {

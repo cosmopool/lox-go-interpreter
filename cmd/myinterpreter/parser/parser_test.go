@@ -88,6 +88,40 @@ func TestPrimaryIterateOverTokens(t *testing.T) {
 	}
 	_, isGroup := expr.(Grouping)
 	if !isGroup {
-    t.Fatalf("should receive a group, but got: %v", expr)
+		t.Fatalf("should receive a group, but got: %v", expr)
+	}
+}
+
+func TestGroupingEmptyParenthesis(t *testing.T) {
+	tokens := []scanner.Token{
+		{Type: scanner.LEFT_PAREN, Lexeme: "(", Literal: nil},
+		{Type: scanner.RIGHT_PAREN, Lexeme: ")", Literal: nil},
+	}
+
+	parser := Parser{Tokens: tokens}
+	expr, err := parser.expression()
+	if err != nil {
+		t.Fatalf("was not expecting any errors, but got: %v", err)
+	}
+	_, ok := expr.(Grouping)
+	if !ok {
+		t.Fatalf("should receive a Unary, but got: %v", expr)
+	}
+}
+
+func TestUnary(t *testing.T) {
+	tokens := []scanner.Token{
+		{Type: scanner.BANG, Lexeme: "!", Literal: nil},
+		{Type: scanner.TRUE, Lexeme: "true", Literal: true},
+	}
+
+	parser := Parser{Tokens: tokens}
+	expr, err := parser.expression()
+	if err != nil {
+		t.Fatalf("was not expecting any errors, but got: %v", err)
+	}
+	_, ok := expr.(Unary)
+	if !ok {
+		t.Fatalf("should receive a Unary, but got: %v", expr)
 	}
 }
