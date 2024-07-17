@@ -1,13 +1,14 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/scanner"
 )
 
 type Parser struct {
 	Tokens      []scanner.Token
 	expressions []Expression
-	errors      []Error
 	position    int
 }
 
@@ -42,37 +43,72 @@ func (p *Parser) match(tokenTypes ...string) bool {
 	return false
 }
 
-func (p *Parser) term() Expression {
-	expr := p.primary()
+func (p *Parser) expression() (Expression, error) {
+	return p.term()
+}
+
+func (p *Parser) term() (Expression, error) {
+	expr, err := p.primary()
+	if err != nil {
+		return expr, err
+	}
 
 	for p.match(scanner.MINUS, scanner.PLUS) {
 		operator := p.previous()
-		right := p.primary()
+		right, err := p.primary()
+		if err != nil {
+			return expr, err
+		}
+
 		expr = Binary{Left: expr, Operator: operator, Right: right}
 	}
 
-	return expr
+	return expr, nil
 }
 
-func (p *Parser) primary() Expression {
+func (p *Parser) primary() (Expression, error) {
 	if p.match(scanner.FALSE) {
-		return Literal{Value: false}
+		return Literal{Value: false}, nil
 	}
 
 	if p.match(scanner.TRUE) {
-		return Literal{Value: true}
+		return Literal{Value: true}, nil
 	}
 
 	if p.match(scanner.NIL) {
-		return Literal{Value: nil}
+		return Literal{Value: nil}, nil
 	}
 
-	return Literal{Value: p.advance().Literal}
+	if p.match(scanner.NUMBER, scanner.STRING) {
+		return Literal{Value: p.previous().Literal}, nil
+	}
+
+	if p.match(scanner.LEFT_PAREN) {
+		expr, err := p.expression()
+		if err != nil {
+			return expr, err
+		}
+
+		if p.current().Type == scanner.RIGHT_PAREN {
+			p.advance()
+		} else {
+
+			return expr, fmt.Errorf("Expect ')' after expression.")
+		}
+		return Grouping{Expr: expr}, nil
+	}
+
+	return nil, fmt.Errorf("Unrecognized Token: %v", p.current())
 }
 
-func (p *Parser) Parse() ([]Expression, []Error) {
+func (p *Parser) Parse() ([]Expression, error) {
 	for !p.isAtEnd() {
-		p.expressions = append(p.expressions, p.term())
+		expr, err := p.expression()
+		if err != nil {
+			return p.expressions, err
+		}
+
+		p.expressions = append(p.expressions, expr)
 	}
-	return p.expressions, p.errors
+	return p.expressions, nil
 }

@@ -73,3 +73,21 @@ func TestCallingTermShouldIncreasePosition(t *testing.T) {
 		t.Fatal("term() should increase position")
 	}
 }
+
+func TestPrimaryIterateOverTokens(t *testing.T) {
+	tokens := []scanner.Token{
+		{Type: scanner.LEFT_PAREN, Lexeme: "(", Literal: nil},
+		{Type: scanner.STRING, Lexeme: "foo", Literal: "foo"},
+		{Type: scanner.RIGHT_PAREN, Lexeme: ")", Literal: nil},
+	}
+
+	parser := Parser{Tokens: tokens}
+	expr, err := parser.primary()
+	if err != nil {
+		t.Fatalf("was not expecting any errors, but got: %v", err)
+	}
+	_, isGroup := expr.(Grouping)
+	if !isGroup {
+    t.Fatalf("should receive a group, but got: %v", expr)
+	}
+}

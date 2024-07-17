@@ -33,13 +33,13 @@ func main() {
 			os.Exit(65)
 		}
 		parser := parser.Parser{Tokens: tokens}
-		expressions, errors := parser.Parse()
-		printExpressions(expressions)
-
-		if len(errors) > 0 {
-			printExpressionsErrors(errors)
+		expressions, err := parser.Parse()
+		if err != nil {
+			fmt.Fprint(os.Stderr, "Error: ", err)
 			os.Exit(65)
 		}
+		printExpressions(expressions)
+
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
@@ -71,11 +71,5 @@ func printErrors(errors []scanner.Error) {
 func printExpressions(expressions []parser.Expression) {
 	for _, expr := range expressions {
 		fmt.Println(expr)
-	}
-}
-
-func printExpressionsErrors(errors []parser.Error) {
-	for _, err := range errors {
-		fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", err.Line, err.Err)
 	}
 }

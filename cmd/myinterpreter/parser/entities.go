@@ -28,6 +28,9 @@ type Grouping struct {
 }
 
 func (g Grouping) Expression() {}
+func (g Grouping) String() string {
+	return fmt.Sprintf("(group %s)", g.Expr)
+}
 
 type Literal struct {
 	Value any
