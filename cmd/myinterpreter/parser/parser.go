@@ -43,11 +43,11 @@ func (p *Parser) match(tokenTypes ...string) bool {
 	return false
 }
 
-func (p *Parser) expression() (Expression, error) {
+func (p *Parser) expression() (Expression, *scanner.Error) {
 	return p.equality()
 }
 
-func (p *Parser) equality() (Expression, error) {
+func (p *Parser) equality() (Expression, *scanner.Error) {
 	expr, err := p.comparison()
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (p *Parser) equality() (Expression, error) {
 	return expr, nil
 }
 
-func (p *Parser) comparison() (Expression, error) {
+func (p *Parser) comparison() (Expression, *scanner.Error) {
 	expr, err := p.term()
 	if err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (p *Parser) comparison() (Expression, error) {
 	return expr, nil
 }
 
-func (p *Parser) term() (Expression, error) {
+func (p *Parser) term() (Expression, *scanner.Error) {
 	expr, err := p.factor()
 	if err != nil {
 		return nil, err
@@ -104,7 +104,7 @@ func (p *Parser) term() (Expression, error) {
 	return expr, nil
 }
 
-func (p *Parser) factor() (Expression, error) {
+func (p *Parser) factor() (Expression, *scanner.Error) {
 	expr, err := p.unary()
 	if err != nil {
 		return expr, err
@@ -123,7 +123,7 @@ func (p *Parser) factor() (Expression, error) {
 	return expr, nil
 }
 
-func (p *Parser) unary() (Expression, error) {
+func (p *Parser) unary() (Expression, *scanner.Error) {
 	if p.match(scanner.BANG, scanner.MINUS) {
 		operator := p.previous()
 		right, err := p.unary()
@@ -136,7 +136,7 @@ func (p *Parser) unary() (Expression, error) {
 	return p.primary()
 }
 
-func (p *Parser) primary() (Expression, error) {
+func (p *Parser) primary() (Expression, *scanner.Error) {
 	if p.match(scanner.FALSE) {
 		return Literal{Value: false}, nil
 	}
@@ -154,7 +154,8 @@ func (p *Parser) primary() (Expression, error) {
 	}
 
 	if !p.match(scanner.LEFT_PAREN) {
-		return nil, nil
+		err := fmt.Errorf("Expect ')' after expression.")
+		return nil, &scanner.Error{Line: p.current().Line, Err: err}
 	}
 
 	expr, err := p.expression()
@@ -163,17 +164,18 @@ func (p *Parser) primary() (Expression, error) {
 	}
 
 	if expr == nil {
-		return nil, fmt.Errorf("Empty group")
+		return nil, &scanner.Error{Line: p.current().Line, Err: fmt.Errorf("Empty group")}
 	}
 
 	if !p.match(scanner.RIGHT_PAREN) {
-		return expr, fmt.Errorf("Expect ')' after expression.")
+		err := fmt.Errorf("Expect ')' after expression.")
+		return expr, &scanner.Error{Line: p.current().Line, Err: err}
 	}
 
 	return Grouping{Expr: expr}, nil
 }
 
-func (p *Parser) Parse() ([]Expression, error) {
+func (p *Parser) Parse() ([]Expression, *scanner.Error) {
 	for !p.isAtEnd() {
 		expr, err := p.expression()
 		if err != nil {

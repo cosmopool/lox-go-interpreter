@@ -35,7 +35,7 @@ func main() {
 		parser := parser.Parser{Tokens: tokens}
 		expressions, err := parser.Parse()
 		if err != nil {
-			fmt.Fprint(os.Stderr, "Error: ", err)
+			fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", err.Line, err.Err)
 			os.Exit(65)
 		}
 		printExpressions(expressions)

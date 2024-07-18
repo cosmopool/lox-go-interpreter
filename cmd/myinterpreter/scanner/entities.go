@@ -76,6 +76,7 @@ type Token struct {
 	Type    tokenType
 	Lexeme  string
 	Literal any
+  Line int
 }
 
 func (t Token) String() string {

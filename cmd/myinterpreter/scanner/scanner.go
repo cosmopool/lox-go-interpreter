@@ -5,68 +5,70 @@ import (
 	"strconv"
 	"unicode"
 )
+
 var tokens []Token
 var errors []Error
 var position int
 var contents []byte
 var endOfFile int
+var line int
 
 func ScanFile(fileContents []byte) ([]Token, []Error) {
 	contents = fileContents
 	endOfFile = len(contents)
-	line := 1
+	line = 1
 
 	for position < endOfFile {
 		character := rune(contents[position])
 
 		switch character {
 		case '(':
-			tokens = append(tokens, Token{LEFT_PAREN, "(", nil})
+			tokens = append(tokens, Token{LEFT_PAREN, "(", nil, line})
 		case ')':
-			tokens = append(tokens, Token{RIGHT_PAREN, ")", nil})
+			tokens = append(tokens, Token{RIGHT_PAREN, ")", nil, line})
 		case '{':
-			tokens = append(tokens, Token{LEFT_BRACE, "{", nil})
+			tokens = append(tokens, Token{LEFT_BRACE, "{", nil, line})
 		case '}':
-			tokens = append(tokens, Token{RIGHT_BRACE, "}", nil})
+			tokens = append(tokens, Token{RIGHT_BRACE, "}", nil, line})
 		case '*':
-			tokens = append(tokens, Token{STAR, "*", nil})
+			tokens = append(tokens, Token{STAR, "*", nil, line})
 		case '.':
-			tokens = append(tokens, Token{DOT, ".", nil})
+			tokens = append(tokens, Token{DOT, ".", nil, line})
 		case ',':
-			tokens = append(tokens, Token{COMMA, ",", nil})
+			tokens = append(tokens, Token{COMMA, ",", nil, line})
 		case '+':
-			tokens = append(tokens, Token{PLUS, "+", nil})
+			tokens = append(tokens, Token{PLUS, "+", nil, line})
 		case '-':
-			tokens = append(tokens, Token{MINUS, "-", nil})
+			tokens = append(tokens, Token{MINUS, "-", nil, line})
 		case ';':
-			tokens = append(tokens, Token{SEMICOLON, ";", nil})
+			tokens = append(tokens, Token{SEMICOLON, ";", nil, line})
 		case '=':
 			if nextRuneEquals('=') {
 				advanceCursor()
-				tokens = append(tokens, Token{EQUAL_EQUAL, "==", nil})
+				tokens = append(tokens, Token{EQUAL_EQUAL, "==", nil, line})
 			} else {
-				tokens = append(tokens, Token{EQUAL, "=", nil})
+				tokens = append(tokens, Token{EQUAL, "=", nil, line})
 			}
 		case '!':
 			if nextRuneEquals('=') {
 				advanceCursor()
-				tokens = append(tokens, Token{BANG_EQUAL, "!=", nil})
+				tokens = append(tokens, Token{BANG_EQUAL, "!=", nil, line})
 			} else {
-				tokens = append(tokens, Token{BANG, "!", nil})
+				tokens = append(tokens, Token{BANG, "!", nil, line})
 			}
 		case '<':
 			if nextRuneEquals('=') {
 				advanceCursor()
-				tokens = append(tokens, Token{LESS_EQUAL, "<=", nil})
+				tokens = append(tokens, Token{LESS_EQUAL, "<=", nil, line})
 			} else {
-				tokens = append(tokens, Token{LESS, "<", nil})
+				tokens = append(tokens, Token{LESS, "<", nil, line})
 			}
 		case '>':
 			if nextRuneEquals('=') {
 				advanceCursor()
-				tokens = append(tokens, Token{GREATER_EQUAL, ">=", nil})
+				tokens = append(tokens, Token{GREATER_EQUAL, ">=", nil, line})
 			} else {
-				tokens = append(tokens, Token{GREATER, ">", nil})
+				tokens = append(tokens, Token{GREATER, ">", nil, line})
 			}
 		case '\t', ' ':
 			// ignore whitespaces
@@ -85,7 +87,7 @@ func ScanFile(fileContents []byte) ([]Token, []Error) {
 
 				line++
 			} else {
-				tokens = append(tokens, Token{SLASH, "/", nil})
+				tokens = append(tokens, Token{SLASH, "/", nil, line})
 			}
 		case '"':
 			startPosition := position
@@ -105,7 +107,7 @@ func ScanFile(fileContents []byte) ([]Token, []Error) {
 
 			literal := string(contents[startPosition+1 : position])
 			lexeme := `"` + literal + `"`
-			tokens = append(tokens, Token{STRING, lexeme, literal})
+			tokens = append(tokens, Token{STRING, lexeme, literal, line})
 		default:
 			if unicode.IsDigit(character) {
 				tokenizeNumber()
@@ -123,7 +125,7 @@ func ScanFile(fileContents []byte) ([]Token, []Error) {
 		advanceCursor()
 	}
 
-	tokens = append(tokens, Token{EOF, "", nil})
+	tokens = append(tokens, Token{EOF, "", nil, line})
 
 	return tokens, errors
 }
@@ -181,7 +183,7 @@ func tokenizeNumber() {
 	if err != nil {
 		panic(err)
 	}
-	token := Token{NUMBER, lexeme, literal}
+	token := Token{NUMBER, lexeme, literal, line}
 	tokens = append(tokens, token)
 }
 
@@ -205,5 +207,5 @@ func tokenizeIdentifier() {
 		tokenType = keyword
 	}
 
-	tokens = append(tokens, Token{tokenType, lexeme, nil})
+	tokens = append(tokens, Token{tokenType, lexeme, nil, line})
 }
