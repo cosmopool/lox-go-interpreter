@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/scanner"
