@@ -9,25 +9,25 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 3 {
-		fmt.Fprintln(os.Stderr, "Usage: ./your_program.sh tokenize <filename>")
-		os.Exit(1)
-	}
+	// if len(os.Args) < 3 {
+	// 	fmt.Fprintln(os.Stderr, "Usage: ./your_program.sh tokenize <filename>")
+	// 	os.Exit(1)
+	// }
 
-	command := os.Args[1]
-	filename := os.Args[2]
+	// command := os.Args[1]
+	// filename := os.Args[2]
 
-	switch command {
-	case "tokenize":
-		tokens, errors := tokenize(filename)
-		printTokens(tokens)
-
-		if len(errors) > 0 {
-			printErrors(errors)
-			os.Exit(65)
-		}
+	switch "parse" {
+	// case "tokenize":
+	// 	tokens, errors := tokenize(filename)
+	// 	printTokens(tokens)
+	//
+	// 	if len(errors) > 0 {
+	// 		printErrors(errors)
+	// 		os.Exit(65)
+	// 	}
 	case "parse":
-		tokens, tokenErrors := tokenize(filename)
+		tokens, tokenErrors := tokenize("test.lox")
 		if len(tokenErrors) > 0 {
 			printErrors(tokenErrors)
 			os.Exit(65)
@@ -41,7 +41,7 @@ func main() {
 		printExpressions(expressions)
 
 	default:
-		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
+		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", "")
 		os.Exit(1)
 	}
 }

@@ -1,1 +1,6 @@
 *debug*
+*.lox
+*test*
+a
+*.out
+launch.json

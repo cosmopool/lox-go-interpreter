@@ -18,7 +18,7 @@ type Binary struct {
 }
 
 func (b Binary) String() string {
-	return fmt.Sprintf("(%s (%s %s))", b.Operator.Lexeme, b.Left, b.Right)
+	return fmt.Sprintf("(%s %s %s)", b.Operator.Lexeme, b.Left, b.Right)
 }
 
 func (b Binary) Expression() {}
