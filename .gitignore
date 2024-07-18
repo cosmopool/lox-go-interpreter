@@ -1,1 +1,7 @@
 *debug*
+*.lox
+*test*
+a
+*.out
+launch.json
+myinterpreter
