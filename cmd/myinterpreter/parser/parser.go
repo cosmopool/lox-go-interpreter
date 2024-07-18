@@ -44,7 +44,26 @@ func (p *Parser) match(tokenTypes ...string) bool {
 }
 
 func (p *Parser) expression() (Expression, error) {
-	return p.comparison()
+	return p.equality()
+}
+
+func (p *Parser) equality() (Expression, error) {
+	expr, err := p.comparison()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.match(scanner.EQUAL_EQUAL, scanner.BANG_EQUAL) {
+		operator := p.previous()
+		right, err := p.equality()
+		if err != nil {
+			return nil, err
+		}
+
+		expr = Binary{Left: expr, Operator: operator, Right: right}
+	}
+
+	return expr, nil
 }
 
 func (p *Parser) comparison() (Expression, error) {
