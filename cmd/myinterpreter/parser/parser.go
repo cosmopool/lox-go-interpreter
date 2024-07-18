@@ -44,20 +44,39 @@ func (p *Parser) match(tokenTypes ...string) bool {
 }
 
 func (p *Parser) expression() (Expression, error) {
-	return p.term()
+	return p.comparison()
+}
+
+func (p *Parser) comparison() (Expression, error) {
+	expr, err := p.term()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.match(scanner.GREATER, scanner.GREATER_EQUAL, scanner.LESS, scanner.LESS_EQUAL) {
+		operator := p.previous()
+		right, err := p.term()
+		if err != nil {
+			return nil, err
+		}
+
+		expr = Binary{Left: expr, Operator: operator, Right: right}
+	}
+
+	return expr, nil
 }
 
 func (p *Parser) term() (Expression, error) {
 	expr, err := p.factor()
 	if err != nil {
-		return expr, err
+		return nil, err
 	}
 
 	for p.match(scanner.MINUS, scanner.PLUS) {
 		operator := p.previous()
 		right, err := p.factor()
 		if err != nil {
-			return expr, err
+			return nil, err
 		}
 
 		expr = Binary{Left: expr, Operator: operator, Right: right}
@@ -86,17 +105,16 @@ func (p *Parser) factor() (Expression, error) {
 }
 
 func (p *Parser) unary() (Expression, error) {
-	if !p.match(scanner.BANG, scanner.MINUS) {
-		return p.primary()
+	if p.match(scanner.BANG, scanner.MINUS) {
+		operator := p.previous()
+		right, err := p.unary()
+		if err != nil {
+			return nil, err
+		}
+		return Unary{Operator: operator, Right: right}, nil
 	}
 
-	operator := p.previous()
-	right, err := p.unary()
-	if err != nil {
-		return nil, err
-	}
-
-	return Unary{Operator: operator, Right: right}, nil
+	return p.primary()
 }
 
 func (p *Parser) primary() (Expression, error) {
@@ -129,9 +147,7 @@ func (p *Parser) primary() (Expression, error) {
 		return nil, fmt.Errorf("Empty group")
 	}
 
-	if p.current().Type == scanner.RIGHT_PAREN {
-		p.advance()
-	} else {
+	if !p.match(scanner.RIGHT_PAREN) {
 		return expr, fmt.Errorf("Expect ')' after expression.")
 	}
 

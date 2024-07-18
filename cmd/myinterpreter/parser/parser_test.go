@@ -2,7 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/scanner"
@@ -179,6 +178,41 @@ func TestParserFactorWithParentheses(t *testing.T) {
 	}
 
 	_, ok := e[0].(Grouping)
+	if !ok {
+		t.Fatalf("was expecting an Group expression, but got: %v", e[0])
+	}
+}
+
+func TestParserComparison(t *testing.T) {
+	tokens := []scanner.Token{
+		{Type: scanner.LEFT_PAREN, Lexeme: "(", Literal: nil},
+		{Type: scanner.NUMBER, Lexeme: "23.0", Literal: 23},
+		{Type: scanner.MINUS, Lexeme: "-", Literal: nil},
+		{Type: scanner.NUMBER, Lexeme: "98.0", Literal: 98},
+		{Type: scanner.RIGHT_PAREN, Lexeme: ")", Literal: nil},
+		{Type: scanner.GREATER_EQUAL, Lexeme: ">=", Literal: nil},
+		{Type: scanner.MINUS, Lexeme: "-", Literal: nil},
+		{Type: scanner.LEFT_PAREN, Lexeme: "(", Literal: nil},
+		{Type: scanner.NUMBER, Lexeme: "22.0", Literal: 22},
+		{Type: scanner.SLASH, Lexeme: "/", Literal: nil},
+		{Type: scanner.NUMBER, Lexeme: "51.0", Literal: 51},
+		{Type: scanner.PLUS, Lexeme: "+", Literal: nil},
+		{Type: scanner.NUMBER, Lexeme: "95.0", Literal: 95},
+		{Type: scanner.RIGHT_PAREN, Lexeme: ")", Literal: nil},
+		{Type: scanner.EOF, Lexeme: "EOF", Literal: nil},
+	}
+
+	parser := Parser{Tokens: tokens}
+	e, err := parser.Parse()
+	if err != nil {
+		t.Fatalf("was not expecting any errors, but got: %v", err)
+	}
+
+	if len(e) != 1 {
+		t.Fatalf("there should be 1 expression, but got: %d", len(e))
+	}
+
+	_, ok := e[0].(Binary)
 	if !ok {
 		t.Fatalf("was expecting an Group expression, but got: %v", e[0])
 	}
