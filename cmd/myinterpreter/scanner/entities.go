@@ -72,18 +72,26 @@ func Keywords() map[string]tokenType {
 	}
 }
 
+type ScannerToken interface {
+	T()
+}
+
 type Token struct {
 	Type    tokenType
 	Lexeme  string
 	Literal any
-  Line int
+	Line    int
 }
 
 func (t Token) String() string {
 	return fmt.Sprintf("%v %s %v\n", t.Type, t.Lexeme, utils.VariableToString(t.Literal, true))
 }
 
+func (t Token) T() {}
+
 type Error struct {
 	Line int
 	Err  error
 }
+
+func (e Error) T() {}
