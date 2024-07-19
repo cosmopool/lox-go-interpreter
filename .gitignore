@@ -4,4 +4,4 @@
 a
 *.out
 launch.json
-myinterpreter
+/myinterpreter
