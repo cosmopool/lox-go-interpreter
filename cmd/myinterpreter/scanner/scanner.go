@@ -3,6 +3,7 @@ package scanner
 import (
 	"fmt"
 	"strconv"
+	"sync"
 	"unicode"
 )
 
@@ -13,7 +14,9 @@ var contents []byte
 var endOfFile int
 var line int
 
-func ScanFile(fileContents []byte) ([]Token, []Error) {
+func ScanFile(waitGroup *sync.WaitGroup, tokensCh chan<- ScannerToken, fileContents []byte) {
+	defer waitGroup.Done()
+
 	contents = fileContents
 	endOfFile = len(contents)
 	line = 1
@@ -23,52 +26,52 @@ func ScanFile(fileContents []byte) ([]Token, []Error) {
 
 		switch character {
 		case '(':
-			tokens = append(tokens, Token{LEFT_PAREN, "(", nil, line})
+			tokensCh <- Token{LEFT_PAREN, "(", nil, line}
 		case ')':
-			tokens = append(tokens, Token{RIGHT_PAREN, ")", nil, line})
+			tokensCh <- Token{RIGHT_PAREN, ")", nil, line}
 		case '{':
-			tokens = append(tokens, Token{LEFT_BRACE, "{", nil, line})
+			tokensCh <- Token{LEFT_BRACE, "{", nil, line}
 		case '}':
-			tokens = append(tokens, Token{RIGHT_BRACE, "}", nil, line})
+			tokensCh <- Token{RIGHT_BRACE, "}", nil, line}
 		case '*':
-			tokens = append(tokens, Token{STAR, "*", nil, line})
+			tokensCh <- Token{STAR, "*", nil, line}
 		case '.':
-			tokens = append(tokens, Token{DOT, ".", nil, line})
+			tokensCh <- Token{DOT, ".", nil, line}
 		case ',':
-			tokens = append(tokens, Token{COMMA, ",", nil, line})
+			tokensCh <- Token{COMMA, ",", nil, line}
 		case '+':
-			tokens = append(tokens, Token{PLUS, "+", nil, line})
+			tokensCh <- Token{PLUS, "+", nil, line}
 		case '-':
-			tokens = append(tokens, Token{MINUS, "-", nil, line})
+			tokensCh <- Token{MINUS, "-", nil, line}
 		case ';':
-			tokens = append(tokens, Token{SEMICOLON, ";", nil, line})
+			tokensCh <- Token{SEMICOLON, ";", nil, line}
 		case '=':
 			if nextRuneEquals('=') {
 				advanceCursor()
-				tokens = append(tokens, Token{EQUAL_EQUAL, "==", nil, line})
+				tokensCh <- Token{EQUAL_EQUAL, "==", nil, line}
 			} else {
-				tokens = append(tokens, Token{EQUAL, "=", nil, line})
+				tokensCh <- Token{EQUAL, "=", nil, line}
 			}
 		case '!':
 			if nextRuneEquals('=') {
 				advanceCursor()
-				tokens = append(tokens, Token{BANG_EQUAL, "!=", nil, line})
+				tokensCh <- Token{BANG_EQUAL, "!=", nil, line}
 			} else {
-				tokens = append(tokens, Token{BANG, "!", nil, line})
+				tokensCh <- Token{BANG, "!", nil, line}
 			}
 		case '<':
 			if nextRuneEquals('=') {
 				advanceCursor()
-				tokens = append(tokens, Token{LESS_EQUAL, "<=", nil, line})
+				tokensCh <- Token{LESS_EQUAL, "<=", nil, line}
 			} else {
-				tokens = append(tokens, Token{LESS, "<", nil, line})
+				tokensCh <- Token{LESS, "<", nil, line}
 			}
 		case '>':
 			if nextRuneEquals('=') {
 				advanceCursor()
-				tokens = append(tokens, Token{GREATER_EQUAL, ">=", nil, line})
+				tokensCh <- Token{GREATER_EQUAL, ">=", nil, line}
 			} else {
-				tokens = append(tokens, Token{GREATER, ">", nil, line})
+				tokensCh <- Token{GREATER, ">", nil, line}
 			}
 		case '\t', ' ':
 			// ignore whitespaces
@@ -87,7 +90,7 @@ func ScanFile(fileContents []byte) ([]Token, []Error) {
 
 				line++
 			} else {
-				tokens = append(tokens, Token{SLASH, "/", nil, line})
+				tokensCh <- Token{SLASH, "/", nil, line}
 			}
 		case '"':
 			startPosition := position
@@ -107,7 +110,7 @@ func ScanFile(fileContents []byte) ([]Token, []Error) {
 
 			literal := string(contents[startPosition+1 : position])
 			lexeme := `"` + literal + `"`
-			tokens = append(tokens, Token{STRING, lexeme, literal, line})
+			tokensCh <- Token{STRING, lexeme, literal, line}
 		default:
 			if unicode.IsDigit(character) {
 				tokenizeNumber()
@@ -125,9 +128,8 @@ func ScanFile(fileContents []byte) ([]Token, []Error) {
 		advanceCursor()
 	}
 
-	tokens = append(tokens, Token{EOF, "", nil, line})
-
-	return tokens, errors
+	tokensCh <- Token{EOF, "", nil, line}
+  close(tokensCh)
 }
 
 func reportError(line int, err error) {

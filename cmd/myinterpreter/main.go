@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/parser"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/scanner"
@@ -17,17 +18,19 @@ func main() {
 	command := os.Args[1]
 	filename := os.Args[2]
 
+	var waitGroup sync.WaitGroup
+
 	switch command {
 	case "tokenize":
-		tokens, errors := tokenize(filename)
-		printTokens(tokens)
+		_, errors := tokenize(filename, &waitGroup)
+		// printTokens(tokens)
 
 		if len(errors) > 0 {
-			printErrors(errors)
+			// printErrors(errors)
 			os.Exit(65)
 		}
 	case "parse":
-		tokens, tokenErrors := tokenize(filename)
+		tokens, tokenErrors := tokenize(filename, &waitGroup)
 		if len(tokenErrors) > 0 {
 			printErrors(tokenErrors)
 			os.Exit(65)
@@ -46,21 +49,42 @@ func main() {
 	}
 }
 
-func tokenize(filename string) ([]scanner.Token, []scanner.Error) {
+func tokenize(filename string, waitGroup *sync.WaitGroup) ([]scanner.Token, []scanner.Error) {
 	fileContents, err := os.ReadFile(filename)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
 		os.Exit(1)
 	}
 
-	return scanner.ScanFile(fileContents)
+	var errors []scanner.Error
+	var tokens []scanner.Token
+
+	tokensCh := make(chan scanner.ScannerToken)
+	waitGroup.Add(1)
+	go scanner.ScanFile(waitGroup, tokensCh, fileContents)
+	for scannerToken := range tokensCh {
+		err, isError := scannerToken.(scanner.Error)
+		if isError {
+			errors = append(errors, err)
+			fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", err.Line, err.Err)
+		}
+
+		token, isToken := scannerToken.(scanner.Token)
+		if isToken {
+			tokens = append(tokens, token)
+			fmt.Print(token)
+		}
+	}
+	waitGroup.Wait()
+
+	return tokens, errors
 }
 
-func printTokens(tokens []scanner.Token) {
-	for _, token := range tokens {
-		fmt.Print(token)
-	}
-}
+// func printTokens(tokens []scanner.Token) {
+// 	for _, token := range tokens {
+// 		fmt.Print(token)
+// 	}
+// }
 
 func printErrors(errors []scanner.Error) {
 	for _, err := range errors {
