@@ -1,55 +1,46 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/scanner"
-	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/utils"
 )
 
-type Expression interface {
-	Expression()
+type Expression[T any] interface {
+	Accept(visitor ExpressionVisitor[T]) (T, error)
 }
 
-type Binary struct {
-	Left     Expression
+type Binary[T any] struct {
+	Left     Expression[T]
 	Operator scanner.Token
-	Right    Expression
+	Right    Expression[T]
 }
 
-func (b Binary) String() string {
-	return fmt.Sprintf("(%s %s %s)", b.Operator.Lexeme, b.Left, b.Right)
+func (b Binary[T]) Accept(visitor ExpressionVisitor[T]) (T, error) {
+	return visitor.VisitBinaryExpr(b)
 }
 
-func (b Binary) Expression() {}
-
-type Grouping struct {
-	Expr Expression
+type Grouping[T any] struct {
+	Expr Expression[T]
 }
 
-func (g Grouping) Expression() {}
-func (g Grouping) String() string {
-	return fmt.Sprintf("(group %s)", g.Expr)
+func (g Grouping[T]) Accept(visitor ExpressionVisitor[T]) (T, error) {
+	return visitor.VisitGroupExpr(g)
 }
 
-type Literal struct {
+type Literal[T any] struct {
 	Value any
 }
 
-func (l Literal) Expression() {}
-
-func (l Literal) String() string {
-	return utils.VariableToString(l.Value, false)
+func (l Literal[T]) Accept(visitor ExpressionVisitor[T]) (T, error) {
+	return visitor.VisitLiteralExpr(l)
 }
 
-type Unary struct {
+type Unary[T any] struct {
 	Operator scanner.Token
-	Right    Expression
+	Right    Expression[T]
 }
 
-func (u Unary) Expression() {}
-func (u Unary) String() string {
-	return fmt.Sprintf("(%s %v)", u.Operator.Lexeme, u.Right)
+func (u Unary[T]) Accept(visitor ExpressionVisitor[T]) (T, error) {
+	return visitor.VisitUnaryExpr(u)
 }
 
 type Error struct {

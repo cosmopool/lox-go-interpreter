@@ -236,7 +236,7 @@ func TestParserMissingExpression(t *testing.T) {
 		t.Fatalf("there should be 1 expression, but got: %d", len(e))
 	}
 
-	_, ok := e[0].(Binary)
+	_, ok := e[0].(Binary[any])
 	if !ok {
 		t.Fatalf("was expecting an Group expression, but got: %v", e[0])
 	}

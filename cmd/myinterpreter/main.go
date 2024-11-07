@@ -68,7 +68,7 @@ func printErrors(errors []scanner.Error) {
 	}
 }
 
-func printExpressions(expressions []parser.Expression) {
+func printExpressions(expressions []parser.Expression[any]) {
 	for _, expr := range expressions {
 		fmt.Println(expr)
 	}

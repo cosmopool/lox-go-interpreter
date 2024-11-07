@@ -8,7 +8,7 @@ import (
 
 type Parser struct {
 	Tokens      []scanner.Token
-	expressions []Expression
+	expressions []Expression[any]
 	position    int
 }
 
@@ -43,11 +43,11 @@ func (p *Parser) match(tokenTypes ...string) bool {
 	return false
 }
 
-func (p *Parser) expression() (Expression, *scanner.Error) {
+func (p *Parser) expression() (Expression[any], *scanner.Error) {
 	return p.equality()
 }
 
-func (p *Parser) equality() (Expression, *scanner.Error) {
+func (p *Parser) equality() (Expression[any], *scanner.Error) {
 	expr, err := p.comparison()
 	if err != nil {
 		return nil, err
@@ -60,13 +60,13 @@ func (p *Parser) equality() (Expression, *scanner.Error) {
 			return nil, err
 		}
 
-		expr = Binary{Left: expr, Operator: operator, Right: right}
+		expr = Binary[any]{Left: expr, Operator: operator, Right: right}
 	}
 
 	return expr, nil
 }
 
-func (p *Parser) comparison() (Expression, *scanner.Error) {
+func (p *Parser) comparison() (Expression[any], *scanner.Error) {
 	expr, err := p.term()
 	if err != nil {
 		return nil, err
@@ -79,13 +79,13 @@ func (p *Parser) comparison() (Expression, *scanner.Error) {
 			return nil, err
 		}
 
-		expr = Binary{Left: expr, Operator: operator, Right: right}
+		expr = Binary[any]{Left: expr, Operator: operator, Right: right}
 	}
 
 	return expr, nil
 }
 
-func (p *Parser) term() (Expression, *scanner.Error) {
+func (p *Parser) term() (Expression[any], *scanner.Error) {
 	expr, err := p.factor()
 	if err != nil {
 		return nil, err
@@ -98,13 +98,13 @@ func (p *Parser) term() (Expression, *scanner.Error) {
 			return nil, err
 		}
 
-		expr = Binary{Left: expr, Operator: operator, Right: right}
+		expr = Binary[any]{Left: expr, Operator: operator, Right: right}
 	}
 
 	return expr, nil
 }
 
-func (p *Parser) factor() (Expression, *scanner.Error) {
+func (p *Parser) factor() (Expression[any], *scanner.Error) {
 	expr, err := p.unary()
 	if err != nil {
 		return expr, err
@@ -117,40 +117,40 @@ func (p *Parser) factor() (Expression, *scanner.Error) {
 			return expr, err
 		}
 
-		expr = Binary{Left: expr, Operator: operator, Right: right}
+		expr = Binary[any]{Left: expr, Operator: operator, Right: right}
 	}
 
 	return expr, nil
 }
 
-func (p *Parser) unary() (Expression, *scanner.Error) {
+func (p *Parser) unary() (Expression[any], *scanner.Error) {
 	if p.match(scanner.BANG, scanner.MINUS) {
 		operator := p.previous()
 		right, err := p.unary()
 		if err != nil {
 			return nil, err
 		}
-		return Unary{Operator: operator, Right: right}, nil
+		return Unary[any]{Operator: operator, Right: right}, nil
 	}
 
 	return p.primary()
 }
 
-func (p *Parser) primary() (Expression, *scanner.Error) {
+func (p *Parser) primary() (Expression[any], *scanner.Error) {
 	if p.match(scanner.FALSE) {
-		return Literal{Value: false}, nil
+		return Literal[any]{Value: false}, nil
 	}
 
 	if p.match(scanner.TRUE) {
-		return Literal{Value: true}, nil
+		return Literal[any]{Value: true}, nil
 	}
 
 	if p.match(scanner.NIL) {
-		return Literal{Value: nil}, nil
+		return Literal[any]{Value: nil}, nil
 	}
 
 	if p.match(scanner.NUMBER, scanner.STRING) {
-		return Literal{Value: p.previous().Literal}, nil
+		return Literal[any]{Value: p.previous().Literal}, nil
 	}
 
 	if !p.match(scanner.LEFT_PAREN) {
@@ -172,10 +172,10 @@ func (p *Parser) primary() (Expression, *scanner.Error) {
 		return expr, &scanner.Error{Line: p.current().Line, Err: err}
 	}
 
-	return Grouping{Expr: expr}, nil
+	return Grouping[any]{Expr: expr}, nil
 }
 
-func (p *Parser) Parse() ([]Expression, *scanner.Error) {
+func (p *Parser) Parse() ([]Expression[any], *scanner.Error) {
 	for !p.isAtEnd() {
 		expr, err := p.expression()
 		if err != nil {
