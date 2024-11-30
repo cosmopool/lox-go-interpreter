@@ -39,7 +39,7 @@ func main() {
 		parser := parser.Parser{Tokens: tokens}
 		expressions, err := parser.Parse()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", err.Line, err.Err)
+			printError(*err)
 			os.Exit(65)
 		}
 
@@ -72,6 +72,10 @@ func printTokens(tokens []core.Token) {
 
 func printErrors(errors []core.Error) {
 	for _, err := range errors {
-		fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", err.Line, err.Err)
+		printError(err)
 	}
+}
+
+func printError(error core.Error) {
+	fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", error.Line, error.Err)
 }
