@@ -21,20 +21,10 @@ func main() {
 
 	switch command {
 	case "tokenize":
-		tokens, errors := tokenize(filename)
-		printTokens(tokens)
-
-		if len(errors) > 0 {
-			printErrors(errors)
-			os.Exit(65)
-		}
+		tokenize(filename, true)
 
 	case "parse":
-		tokens, tokenErrors := tokenize(filename)
-		if len(tokenErrors) > 0 {
-			printErrors(tokenErrors)
-			os.Exit(65)
-		}
+		tokens := tokenize(filename, false)
 		parser := parser.Parser{Tokens: tokens}
 		expressions, err := parser.Parse()
 		if err != nil {
@@ -48,20 +38,45 @@ func main() {
 			expr.Accept(visitor)
 		}
 
+	case "evaluate":
+		tokens := tokenize(filename, false)
+		parser := parser.Parser{Tokens: tokens}
+		expressions, err := parser.Parse()
+		if err != nil {
+			printError(*err)
+			os.Exit(65)
+		}
+
+		// visit expressions
+		visitor := visitor.EvaluatorVisitor{}
+		for _, expr := range expressions {
+			expr.Accept(visitor)
+		}
+
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
 	}
 }
 
-func tokenize(filename string) ([]core.Token, []core.Error) {
+func tokenize(filename string, shouldPrintTokens bool) []core.Token {
 	fileContents, err := os.ReadFile(filename)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
 		os.Exit(1)
 	}
 
-	return scanner.ScanFile(fileContents)
+	tokens, errors := scanner.ScanFile(fileContents)
+	if shouldPrintTokens {
+		printTokens(tokens)
+	}
+
+	if len(errors) > 0 {
+		printErrors(errors)
+		os.Exit(65)
+	}
+
+	return tokens
 }
 
 func printTokens(tokens []core.Token) {
