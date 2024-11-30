@@ -19,8 +19,6 @@ func main() {
 	command := os.Args[1]
 	filename := os.Args[2]
 
-	exprPrinterVisitor := visitor.PrinterVisitor{}
-
 	switch command {
 	case "tokenize":
 		tokens, errors := tokenize(filename)
@@ -44,8 +42,9 @@ func main() {
 		}
 
 		// visit expressions
+		visitor := visitor.PrinterVisitor{}
 		for _, expr := range expressions {
-			expr.Accept(exprPrinterVisitor)
+			expr.Accept(visitor)
 		}
 
 	default:
