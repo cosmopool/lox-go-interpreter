@@ -1,11 +1,5 @@
 package scanner
 
-import (
-	"fmt"
-
-	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/utils"
-)
-
 type tokenType = string
 type keyword = string
 
@@ -77,10 +71,6 @@ type Token struct {
 	Lexeme  string
 	Literal any
   Line int
-}
-
-func (t Token) String() string {
-	return fmt.Sprintf("%v %s %v\n", t.Type, t.Lexeme, utils.VariableToString(t.Literal, true))
 }
 
 type Error struct {
