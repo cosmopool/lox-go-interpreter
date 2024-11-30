@@ -28,6 +28,7 @@ func main() {
 			printErrors(errors)
 			os.Exit(65)
 		}
+
 	case "parse":
 		tokens, tokenErrors := tokenize(filename)
 		if len(tokenErrors) > 0 {
