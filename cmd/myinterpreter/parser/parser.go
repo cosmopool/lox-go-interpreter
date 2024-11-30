@@ -4,11 +4,12 @@ import (
 	"fmt"
 
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/scanner"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 )
 
 type Parser struct {
 	Tokens      []scanner.Token
-	expressions []Expression[any]
+	expressions []core.Expression
 	position    int
 }
 
@@ -43,11 +44,11 @@ func (p *Parser) match(tokenTypes ...string) bool {
 	return false
 }
 
-func (p *Parser) expression() (Expression[any], *scanner.Error) {
+func (p *Parser) expression() (core.Expression, *scanner.Error) {
 	return p.equality()
 }
 
-func (p *Parser) equality() (Expression[any], *scanner.Error) {
+func (p *Parser) equality() (core.Expression, *scanner.Error) {
 	expr, err := p.comparison()
 	if err != nil {
 		return nil, err
@@ -60,13 +61,13 @@ func (p *Parser) equality() (Expression[any], *scanner.Error) {
 			return nil, err
 		}
 
-		expr = Binary[any]{Left: expr, Operator: operator, Right: right}
+		expr = core.Binary{Left: expr, Operator: operator, Right: right}
 	}
 
 	return expr, nil
 }
 
-func (p *Parser) comparison() (Expression[any], *scanner.Error) {
+func (p *Parser) comparison() (core.Expression, *scanner.Error) {
 	expr, err := p.term()
 	if err != nil {
 		return nil, err
@@ -79,13 +80,13 @@ func (p *Parser) comparison() (Expression[any], *scanner.Error) {
 			return nil, err
 		}
 
-		expr = Binary[any]{Left: expr, Operator: operator, Right: right}
+		expr = core.Binary{Left: expr, Operator: operator, Right: right}
 	}
 
 	return expr, nil
 }
 
-func (p *Parser) term() (Expression[any], *scanner.Error) {
+func (p *Parser) term() (core.Expression, *scanner.Error) {
 	expr, err := p.factor()
 	if err != nil {
 		return nil, err
@@ -98,13 +99,13 @@ func (p *Parser) term() (Expression[any], *scanner.Error) {
 			return nil, err
 		}
 
-		expr = Binary[any]{Left: expr, Operator: operator, Right: right}
+		expr = core.Binary{Left: expr, Operator: operator, Right: right}
 	}
 
 	return expr, nil
 }
 
-func (p *Parser) factor() (Expression[any], *scanner.Error) {
+func (p *Parser) factor() (core.Expression, *scanner.Error) {
 	expr, err := p.unary()
 	if err != nil {
 		return expr, err
@@ -117,40 +118,40 @@ func (p *Parser) factor() (Expression[any], *scanner.Error) {
 			return expr, err
 		}
 
-		expr = Binary[any]{Left: expr, Operator: operator, Right: right}
+		expr = core.Binary{Left: expr, Operator: operator, Right: right}
 	}
 
 	return expr, nil
 }
 
-func (p *Parser) unary() (Expression[any], *scanner.Error) {
+func (p *Parser) unary() (core.Expression, *scanner.Error) {
 	if p.match(scanner.BANG, scanner.MINUS) {
 		operator := p.previous()
 		right, err := p.unary()
 		if err != nil {
 			return nil, err
 		}
-		return Unary[any]{Operator: operator, Right: right}, nil
+		return core.Unary{Operator: operator, Right: right}, nil
 	}
 
 	return p.primary()
 }
 
-func (p *Parser) primary() (Expression[any], *scanner.Error) {
+func (p *Parser) primary() (core.Expression, *scanner.Error) {
 	if p.match(scanner.FALSE) {
-		return Literal[any]{Value: false}, nil
+		return core.Literal{Value: false}, nil
 	}
 
 	if p.match(scanner.TRUE) {
-		return Literal[any]{Value: true}, nil
+		return core.Literal{Value: true}, nil
 	}
 
 	if p.match(scanner.NIL) {
-		return Literal[any]{Value: nil}, nil
+		return core.Literal{Value: nil}, nil
 	}
 
 	if p.match(scanner.NUMBER, scanner.STRING) {
-		return Literal[any]{Value: p.previous().Literal}, nil
+		return core.Literal{Value: p.previous().Literal}, nil
 	}
 
 	if !p.match(scanner.LEFT_PAREN) {
@@ -172,10 +173,10 @@ func (p *Parser) primary() (Expression[any], *scanner.Error) {
 		return expr, &scanner.Error{Line: p.current().Line, Err: err}
 	}
 
-	return Grouping[any]{Expr: expr}, nil
+	return core.Grouping{Expr: expr}, nil
 }
 
-func (p *Parser) Parse() ([]Expression[any], *scanner.Error) {
+func (p *Parser) Parse() ([]core.Expression, *scanner.Error) {
 	for !p.isAtEnd() {
 		expr, err := p.expression()
 		if err != nil {

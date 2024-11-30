@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/scanner"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 )
 
 // // isAtEnd() should return FALSE if NOT reached EOF token
@@ -236,7 +237,7 @@ func TestParserMissingExpression(t *testing.T) {
 		t.Fatalf("there should be 1 expression, but got: %d", len(e))
 	}
 
-	_, ok := e[0].(Binary[any])
+	_, ok := e[0].(core.Binary)
 	if !ok {
 		t.Fatalf("was expecting an Group expression, but got: %v", e[0])
 	}
