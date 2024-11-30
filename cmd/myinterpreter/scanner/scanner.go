@@ -4,16 +4,18 @@ import (
 	"fmt"
 	"strconv"
 	"unicode"
+
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 )
 
-var tokens []Token
-var errors []Error
+var tokens []core.Token
+var errors []core.Error
 var position int
 var contents []byte
 var endOfFile int
 var line int
 
-func ScanFile(fileContents []byte) ([]Token, []Error) {
+func ScanFile(fileContents []byte) ([]core.Token, []core.Error) {
 	contents = fileContents
 	endOfFile = len(contents)
 	line = 1
@@ -23,52 +25,52 @@ func ScanFile(fileContents []byte) ([]Token, []Error) {
 
 		switch character {
 		case '(':
-			tokens = append(tokens, Token{LEFT_PAREN, "(", nil, line})
+			tokens = append(tokens, core.Token{Type: core.LEFT_PAREN, Lexeme: "(", Literal: nil, Line: line})
 		case ')':
-			tokens = append(tokens, Token{RIGHT_PAREN, ")", nil, line})
+			tokens = append(tokens, core.Token{Type: core.RIGHT_PAREN, Lexeme: ")", Literal: nil, Line: line})
 		case '{':
-			tokens = append(tokens, Token{LEFT_BRACE, "{", nil, line})
+			tokens = append(tokens, core.Token{Type: core.LEFT_BRACE, Lexeme: "{", Literal: nil, Line: line})
 		case '}':
-			tokens = append(tokens, Token{RIGHT_BRACE, "}", nil, line})
+			tokens = append(tokens, core.Token{Type: core.RIGHT_BRACE, Lexeme: "}", Literal: nil, Line: line})
 		case '*':
-			tokens = append(tokens, Token{STAR, "*", nil, line})
+			tokens = append(tokens, core.Token{Type: core.STAR, Lexeme: "*", Literal: nil, Line: line})
 		case '.':
-			tokens = append(tokens, Token{DOT, ".", nil, line})
+			tokens = append(tokens, core.Token{Type: core.DOT, Lexeme: ".", Literal: nil, Line: line})
 		case ',':
-			tokens = append(tokens, Token{COMMA, ",", nil, line})
+			tokens = append(tokens, core.Token{Type: core.COMMA, Lexeme: ",", Literal: nil, Line: line})
 		case '+':
-			tokens = append(tokens, Token{PLUS, "+", nil, line})
+			tokens = append(tokens, core.Token{Type: core.PLUS, Lexeme: "+", Literal: nil, Line: line})
 		case '-':
-			tokens = append(tokens, Token{MINUS, "-", nil, line})
+			tokens = append(tokens, core.Token{Type: core.MINUS, Lexeme: "-", Literal: nil, Line: line})
 		case ';':
-			tokens = append(tokens, Token{SEMICOLON, ";", nil, line})
+			tokens = append(tokens, core.Token{Type: core.SEMICOLON, Lexeme: ";", Literal: nil, Line: line})
 		case '=':
 			if nextRuneEquals('=') {
 				advanceCursor()
-				tokens = append(tokens, Token{EQUAL_EQUAL, "==", nil, line})
+				tokens = append(tokens, core.Token{Type: core.EQUAL_EQUAL, Lexeme: "==", Literal: nil, Line: line})
 			} else {
-				tokens = append(tokens, Token{EQUAL, "=", nil, line})
+				tokens = append(tokens, core.Token{Type: core.EQUAL, Lexeme: "=", Literal: nil, Line: line})
 			}
 		case '!':
 			if nextRuneEquals('=') {
 				advanceCursor()
-				tokens = append(tokens, Token{BANG_EQUAL, "!=", nil, line})
+				tokens = append(tokens, core.Token{Type: core.BANG_EQUAL, Lexeme: "!=", Literal: nil, Line: line})
 			} else {
-				tokens = append(tokens, Token{BANG, "!", nil, line})
+				tokens = append(tokens, core.Token{Type: core.BANG, Lexeme: "!", Literal: nil, Line: line})
 			}
 		case '<':
 			if nextRuneEquals('=') {
 				advanceCursor()
-				tokens = append(tokens, Token{LESS_EQUAL, "<=", nil, line})
+				tokens = append(tokens, core.Token{Type: core.LESS_EQUAL, Lexeme: "<=", Literal: nil, Line: line})
 			} else {
-				tokens = append(tokens, Token{LESS, "<", nil, line})
+				tokens = append(tokens, core.Token{Type: core.LESS, Lexeme: "<", Literal: nil, Line: line})
 			}
 		case '>':
 			if nextRuneEquals('=') {
 				advanceCursor()
-				tokens = append(tokens, Token{GREATER_EQUAL, ">=", nil, line})
+				tokens = append(tokens, core.Token{Type: core.GREATER_EQUAL, Lexeme: ">=", Literal: nil, Line: line})
 			} else {
-				tokens = append(tokens, Token{GREATER, ">", nil, line})
+				tokens = append(tokens, core.Token{Type: core.GREATER, Lexeme: ">", Literal: nil, Line: line})
 			}
 		case '\t', ' ':
 			// ignore whitespaces
@@ -87,7 +89,7 @@ func ScanFile(fileContents []byte) ([]Token, []Error) {
 
 				line++
 			} else {
-				tokens = append(tokens, Token{SLASH, "/", nil, line})
+				tokens = append(tokens, core.Token{Type: core.SLASH, Lexeme: "/", Literal: nil, Line: line})
 			}
 		case '"':
 			startPosition := position
@@ -107,7 +109,7 @@ func ScanFile(fileContents []byte) ([]Token, []Error) {
 
 			literal := string(contents[startPosition+1 : position])
 			lexeme := `"` + literal + `"`
-			tokens = append(tokens, Token{STRING, lexeme, literal, line})
+			tokens = append(tokens, core.Token{Type: core.STRING, Lexeme: lexeme, Literal: literal, Line: line})
 		default:
 			if unicode.IsDigit(character) {
 				tokenizeNumber()
@@ -125,13 +127,13 @@ func ScanFile(fileContents []byte) ([]Token, []Error) {
 		advanceCursor()
 	}
 
-	tokens = append(tokens, Token{EOF, "", nil, line})
+	tokens = append(tokens, core.Token{Type: core.EOF, Lexeme: "", Literal: nil, Line: line})
 
 	return tokens, errors
 }
 
 func reportError(line int, err error) {
-	errors = append(errors, Error{line, err})
+	errors = append(errors, core.Error{Line: line, Err: err})
 }
 
 func advanceCursor() {
@@ -183,7 +185,7 @@ func tokenizeNumber() {
 	if err != nil {
 		panic(err)
 	}
-	token := Token{NUMBER, lexeme, literal, line}
+	token := core.Token{Type: core.NUMBER, Lexeme: lexeme, Literal: literal, Line: line}
 	tokens = append(tokens, token)
 }
 
@@ -200,12 +202,12 @@ func tokenizeIdentifier() {
 	lexeme := string(contents[startPos:position])
 
 	var tokenType string
-	keyword := Keywords()[lexeme]
+	keyword := core.Keywords()[lexeme]
 	if keyword == "" {
-		tokenType = IDENTIFIER
+		tokenType = core.IDENTIFIER
 	} else {
 		tokenType = keyword
 	}
 
-	tokens = append(tokens, Token{tokenType, lexeme, nil, line})
+	tokens = append(tokens, core.Token{Type: tokenType, Lexeme: lexeme, Literal: nil, Line: line})
 }

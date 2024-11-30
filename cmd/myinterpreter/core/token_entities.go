@@ -1,4 +1,4 @@
-package scanner
+package core
 
 type tokenType = string
 type keyword = string
@@ -71,9 +71,4 @@ type Token struct {
 	Lexeme  string
 	Literal any
   Line int
-}
-
-type Error struct {
-	Line int
-	Err  error
 }

@@ -1,16 +1,12 @@
 package core
 
-import (
-	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/scanner"
-)
-
 type Expression interface {
 	Accept(visitor ExpressionVisitor) error
 }
 
 type Binary struct {
 	Left     Expression
-	Operator scanner.Token
+	Operator Token
 	Right    Expression
 }
 
@@ -35,7 +31,7 @@ func (l Literal) Accept(visitor ExpressionVisitor) error {
 }
 
 type Unary struct {
-	Operator scanner.Token
+	Operator Token
 	Right    Expression
 }
 

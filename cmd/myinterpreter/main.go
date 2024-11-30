@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/parser"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/scanner"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/visitor"
@@ -53,7 +54,7 @@ func main() {
 	}
 }
 
-func tokenize(filename string) ([]scanner.Token, []scanner.Error) {
+func tokenize(filename string) ([]core.Token, []core.Error) {
 	fileContents, err := os.ReadFile(filename)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
@@ -63,13 +64,13 @@ func tokenize(filename string) ([]scanner.Token, []scanner.Error) {
 	return scanner.ScanFile(fileContents)
 }
 
-func printTokens(tokens []scanner.Token) {
+func printTokens(tokens []core.Token) {
 	for _, token := range tokens {
 		fmt.Print(token)
 	}
 }
 
-func printErrors(errors []scanner.Error) {
+func printErrors(errors []core.Error) {
 	for _, err := range errors {
 		fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", err.Line, err.Err)
 	}

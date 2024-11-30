@@ -3,14 +3,13 @@ package parser
 import (
 	"testing"
 
-	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/scanner"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 )
 
 // // isAtEnd() should return FALSE if NOT reached EOF token
 // func TestIsAtEndReturnsFalseIfNotEOFToken(t *testing.T) {
-// 	tokens := []scanner.Token{
-// 		{Type: scanner.NUMBER, Lexeme: "2", Literal: 2},
+// 	tokens := []core.Token{
+// 		{Type: core.NUMBER, Lexeme: "2", Literal: 2},
 // 	}
 //
 // 	parser := Parser{Tokens: tokens}
@@ -21,8 +20,8 @@ import (
 //
 // // isAtEnd() should return TRUE if reached EOF token
 // func TestIsAtEndReturnsTrueReachedEOFToken(t *testing.T) {
-// 	tokens := []scanner.Token{
-// 		{Type: scanner.EOF, Lexeme: "EOF", Literal: nil},
+// 	tokens := []core.Token{
+// 		{Type: core.EOF, Lexeme: "EOF", Literal: nil},
 // 	}
 //
 // 	parser := Parser{Tokens: tokens}
@@ -33,9 +32,9 @@ import (
 //
 // // advance() should increase position if not reached the end tokens[]
 // func TestAdvanceShouldIncreasePositionWhenNotOnEnd(t *testing.T) {
-// 	tokens := []scanner.Token{
-// 		{Type: scanner.NUMBER, Lexeme: "2", Literal: 2},
-// 		{Type: scanner.EOF, Lexeme: "EOF", Literal: nil},
+// 	tokens := []core.Token{
+// 		{Type: core.NUMBER, Lexeme: "2", Literal: 2},
+// 		{Type: core.EOF, Lexeme: "EOF", Literal: nil},
 // 	}
 //
 // 	parser := Parser{Tokens: tokens}
@@ -61,10 +60,10 @@ import (
 // }
 //
 // func TestCallingTermShouldIncreasePosition(t *testing.T) {
-// 	tokens := []scanner.Token{
-// 		{Type: scanner.NUMBER, Lexeme: "2", Literal: 2},
-// 		{Type: scanner.EQUAL, Lexeme: "=", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "3", Literal: 3},
+// 	tokens := []core.Token{
+// 		{Type: core.NUMBER, Lexeme: "2", Literal: 2},
+// 		{Type: core.EQUAL, Lexeme: "=", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "3", Literal: 3},
 // 	}
 //
 // 	parser := Parser{Tokens: tokens}
@@ -75,10 +74,10 @@ import (
 // }
 //
 // func TestPrimaryIterateOverTokens(t *testing.T) {
-// 	tokens := []scanner.Token{
-// 		{Type: scanner.LEFT_PAREN, Lexeme: "(", Literal: nil},
-// 		{Type: scanner.STRING, Lexeme: "foo", Literal: "foo"},
-// 		{Type: scanner.RIGHT_PAREN, Lexeme: ")", Literal: nil},
+// 	tokens := []core.Token{
+// 		{Type: core.LEFT_PAREN, Lexeme: "(", Literal: nil},
+// 		{Type: core.STRING, Lexeme: "foo", Literal: "foo"},
+// 		{Type: core.RIGHT_PAREN, Lexeme: ")", Literal: nil},
 // 	}
 //
 // 	parser := Parser{Tokens: tokens}
@@ -93,9 +92,9 @@ import (
 // }
 //
 // func TestGroupingEmptyParentheses(t *testing.T) {
-// 	tokens := []scanner.Token{
-// 		{Type: scanner.LEFT_PAREN, Lexeme: "(", Literal: nil},
-// 		{Type: scanner.RIGHT_PAREN, Lexeme: ")", Literal: nil},
+// 	tokens := []core.Token{
+// 		{Type: core.LEFT_PAREN, Lexeme: "(", Literal: nil},
+// 		{Type: core.RIGHT_PAREN, Lexeme: ")", Literal: nil},
 // 	}
 //
 // 	parser := Parser{Tokens: tokens}
@@ -106,13 +105,13 @@ import (
 // }
 //
 // func TestFactor(t *testing.T) {
-// 	tokens := []scanner.Token{
-// 		{Type: scanner.NUMBER, Lexeme: "43.0", Literal: 43},
-// 		{Type: scanner.STAR, Lexeme: "*", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "72.0", Literal: 72},
-// 		{Type: scanner.SLASH, Lexeme: "/", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "48.0", Literal: 48},
-// 		{Type: scanner.EOF, Lexeme: "EOF", Literal: nil},
+// 	tokens := []core.Token{
+// 		{Type: core.NUMBER, Lexeme: "43.0", Literal: 43},
+// 		{Type: core.STAR, Lexeme: "*", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "72.0", Literal: 72},
+// 		{Type: core.SLASH, Lexeme: "/", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "48.0", Literal: 48},
+// 		{Type: core.EOF, Lexeme: "EOF", Literal: nil},
 // 	}
 //
 // 	parser := Parser{Tokens: tokens}
@@ -123,19 +122,19 @@ import (
 // }
 //
 // func TestFactorWithParentheses(t *testing.T) {
-// 	tokens := []scanner.Token{
-// 		{Type: scanner.LEFT_PAREN, Lexeme: "(", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "22.0", Literal: 22},
-// 		{Type: scanner.STAR, Lexeme: "*", Literal: nil},
-// 		{Type: scanner.MINUS, Lexeme: "-", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "98.0", Literal: 98},
-// 		{Type: scanner.LEFT_PAREN, Lexeme: "(", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "51.0", Literal: 51},
-// 		{Type: scanner.SLASH, Lexeme: "/", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "95.0", Literal: 95},
-// 		{Type: scanner.RIGHT_PAREN, Lexeme: ")", Literal: nil},
-// 		{Type: scanner.RIGHT_PAREN, Lexeme: ")", Literal: nil},
-// 		{Type: scanner.EOF, Lexeme: "EOF", Literal: nil},
+// 	tokens := []core.Token{
+// 		{Type: core.LEFT_PAREN, Lexeme: "(", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "22.0", Literal: 22},
+// 		{Type: core.STAR, Lexeme: "*", Literal: nil},
+// 		{Type: core.MINUS, Lexeme: "-", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "98.0", Literal: 98},
+// 		{Type: core.LEFT_PAREN, Lexeme: "(", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "51.0", Literal: 51},
+// 		{Type: core.SLASH, Lexeme: "/", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "95.0", Literal: 95},
+// 		{Type: core.RIGHT_PAREN, Lexeme: ")", Literal: nil},
+// 		{Type: core.RIGHT_PAREN, Lexeme: ")", Literal: nil},
+// 		{Type: core.EOF, Lexeme: "EOF", Literal: nil},
 // 	}
 //
 // 	parser := Parser{Tokens: tokens}
@@ -151,20 +150,20 @@ import (
 // }
 //
 // func TestParserFactorWithParentheses(t *testing.T) {
-// 	tokens := []scanner.Token{
-// 		{Type: scanner.LEFT_PAREN, Lexeme: "(", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "22.0", Literal: 22},
-// 		{Type: scanner.STAR, Lexeme: "*", Literal: nil},
-// 		{Type: scanner.MINUS, Lexeme: "-", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "98.0", Literal: 98},
-// 		{Type: scanner.SLASH, Lexeme: "/", Literal: nil},
-// 		{Type: scanner.LEFT_PAREN, Lexeme: "(", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "51.0", Literal: 51},
-// 		{Type: scanner.STAR, Lexeme: "*", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "95.0", Literal: 95},
-// 		{Type: scanner.RIGHT_PAREN, Lexeme: ")", Literal: nil},
-// 		{Type: scanner.RIGHT_PAREN, Lexeme: ")", Literal: nil},
-// 		{Type: scanner.EOF, Lexeme: "EOF", Literal: nil},
+// 	tokens := []core.Token{
+// 		{Type: core.LEFT_PAREN, Lexeme: "(", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "22.0", Literal: 22},
+// 		{Type: core.STAR, Lexeme: "*", Literal: nil},
+// 		{Type: core.MINUS, Lexeme: "-", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "98.0", Literal: 98},
+// 		{Type: core.SLASH, Lexeme: "/", Literal: nil},
+// 		{Type: core.LEFT_PAREN, Lexeme: "(", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "51.0", Literal: 51},
+// 		{Type: core.STAR, Lexeme: "*", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "95.0", Literal: 95},
+// 		{Type: core.RIGHT_PAREN, Lexeme: ")", Literal: nil},
+// 		{Type: core.RIGHT_PAREN, Lexeme: ")", Literal: nil},
+// 		{Type: core.EOF, Lexeme: "EOF", Literal: nil},
 // 	}
 //
 // 	parser := Parser{Tokens: tokens}
@@ -184,22 +183,22 @@ import (
 // }
 //
 // func TestParserComparison(t *testing.T) {
-// 	tokens := []scanner.Token{
-// 		{Type: scanner.LEFT_PAREN, Lexeme: "(", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "23.0", Literal: 23},
-// 		{Type: scanner.MINUS, Lexeme: "-", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "98.0", Literal: 98},
-// 		{Type: scanner.RIGHT_PAREN, Lexeme: ")", Literal: nil},
-// 		{Type: scanner.GREATER_EQUAL, Lexeme: ">=", Literal: nil},
-// 		{Type: scanner.MINUS, Lexeme: "-", Literal: nil},
-// 		{Type: scanner.LEFT_PAREN, Lexeme: "(", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "22.0", Literal: 22},
-// 		{Type: scanner.SLASH, Lexeme: "/", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "51.0", Literal: 51},
-// 		{Type: scanner.PLUS, Lexeme: "+", Literal: nil},
-// 		{Type: scanner.NUMBER, Lexeme: "95.0", Literal: 95},
-// 		{Type: scanner.RIGHT_PAREN, Lexeme: ")", Literal: nil},
-// 		{Type: scanner.EOF, Lexeme: "EOF", Literal: nil},
+// 	tokens := []core.Token{
+// 		{Type: core.LEFT_PAREN, Lexeme: "(", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "23.0", Literal: 23},
+// 		{Type: core.MINUS, Lexeme: "-", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "98.0", Literal: 98},
+// 		{Type: core.RIGHT_PAREN, Lexeme: ")", Literal: nil},
+// 		{Type: core.GREATER_EQUAL, Lexeme: ">=", Literal: nil},
+// 		{Type: core.MINUS, Lexeme: "-", Literal: nil},
+// 		{Type: core.LEFT_PAREN, Lexeme: "(", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "22.0", Literal: 22},
+// 		{Type: core.SLASH, Lexeme: "/", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "51.0", Literal: 51},
+// 		{Type: core.PLUS, Lexeme: "+", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "95.0", Literal: 95},
+// 		{Type: core.RIGHT_PAREN, Lexeme: ")", Literal: nil},
+// 		{Type: core.EOF, Lexeme: "EOF", Literal: nil},
 // 	}
 //
 // 	parser := Parser{Tokens: tokens}
@@ -219,12 +218,12 @@ import (
 // }
 
 func TestParserMissingExpression(t *testing.T) {
-	tokens := []scanner.Token{
-		{Type: scanner.LEFT_PAREN, Lexeme: "(", Literal: nil},
-		{Type: scanner.NUMBER, Lexeme: "51.0", Literal: 51},
-		{Type: scanner.PLUS, Lexeme: "+", Literal: nil},
-		{Type: scanner.RIGHT_PAREN, Lexeme: ")", Literal: nil},
-		{Type: scanner.EOF, Lexeme: "EOF", Literal: nil},
+	tokens := []core.Token{
+		{Type: core.LEFT_PAREN, Lexeme: "(", Literal: nil},
+		{Type: core.NUMBER, Lexeme: "51.0", Literal: 51},
+		{Type: core.PLUS, Lexeme: "+", Literal: nil},
+		{Type: core.RIGHT_PAREN, Lexeme: ")", Literal: nil},
+		{Type: core.EOF, Lexeme: "EOF", Literal: nil},
 	}
 
 	parser := Parser{Tokens: tokens}
