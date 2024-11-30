@@ -6,6 +6,7 @@ import (
 
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/parser"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/scanner"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/visitor"
 )
 
 func main() {
@@ -16,6 +17,8 @@ func main() {
 
 	command := os.Args[1]
 	filename := os.Args[2]
+
+	exprPrinterVisitor := visitor.PrinterVisitor{}
 
 	switch command {
 	case "tokenize":
@@ -38,7 +41,11 @@ func main() {
 			fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", err.Line, err.Err)
 			os.Exit(65)
 		}
-		printExpressions(expressions)
+
+		// visit expressions
+		for _, expr := range expressions {
+			expr.Accept(exprPrinterVisitor)
+		}
 
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
@@ -65,11 +72,5 @@ func printTokens(tokens []scanner.Token) {
 func printErrors(errors []scanner.Error) {
 	for _, err := range errors {
 		fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", err.Line, err.Err)
-	}
-}
-
-func printExpressions(expressions []parser.Expression[any]) {
-	for _, expr := range expressions {
-		fmt.Println(expr)
 	}
 }
