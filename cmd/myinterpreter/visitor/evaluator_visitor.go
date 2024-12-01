@@ -2,25 +2,11 @@ package visitor
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 )
 
 type EvaluatorVisitor struct{}
-
-func getMultipleFloat(a any, b any) (float64, float64, error) {
-	aFloat, err := getFloat(a)
-	if err != nil {
-		return 0, 0, err
-	}
-	bFloat, err := getFloat(b)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return aFloat, bFloat, nil
-}
 
 func (p EvaluatorVisitor) VisitBinaryExpr(expr core.Binary) (any, error) {
 	rightExpr, err := expr.Right.Accept(p)
@@ -53,8 +39,14 @@ func (p EvaluatorVisitor) VisitBinaryExpr(expr core.Binary) (any, error) {
 			return nil, err
 		}
 		return left / right, nil
-    
-  case core.PLUS:
+
+	case core.PLUS:
+		leftStr, leftIsString := leftExpr.(string)
+		rightStr, rightIsString := rightExpr.(string)
+		if leftIsString && rightIsString {
+			return fmt.Sprintf("%s%s", leftStr, rightStr), nil
+		}
+
 		left, right, err := getMultipleFloat(leftExpr, rightExpr)
 		if err != nil {
 			return nil, err
@@ -144,8 +136,21 @@ func getFloat(unk any) (float64, error) {
 	case uint:
 		return float64(i), nil
 	case string:
-		return strconv.ParseFloat(i, 64)
+		return 0, fmt.Errorf("Can't evaluate strings. This is reserved for numbers only.\nGot: %v", unk)
 	}
 
 	return 0, fmt.Errorf("Could not parse given literal to float %v", unk)
+}
+
+func getMultipleFloat(a any, b any) (float64, float64, error) {
+	aFloat, err := getFloat(a)
+	if err != nil {
+		return 0, 0, err
+	}
+	bFloat, err := getFloat(b)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return aFloat, bFloat, nil
 }
