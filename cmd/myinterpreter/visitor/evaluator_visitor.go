@@ -10,7 +10,39 @@ import (
 type EvaluatorVisitor struct{}
 
 func (p EvaluatorVisitor) VisitBinaryExpr(expr core.Binary) (any, error) {
-	return nil, nil
+	rightExpr, err := expr.Right.Accept(p)
+	if err != nil {
+		return nil, err
+	}
+	right, err := getFloat(rightExpr)
+	if err != nil {
+		return nil, err
+	}
+	leftExpr, err := expr.Left.Accept(p)
+	if err != nil {
+		return nil, err
+	}
+	left, err := getFloat(leftExpr)
+	if err != nil {
+		return nil, err
+	}
+
+	switch expr.Operator.Type {
+	case core.MINUS:
+		return left - right, nil
+
+	case core.STAR:
+		return left * right, nil
+
+	case core.SLASH:
+		return left / right, nil
+
+	case core.BANG:
+		return !isTruthy(right), nil
+
+	default:
+		return nil, nil
+	}
 }
 
 func (p EvaluatorVisitor) VisitGroupExpr(expr core.Grouping) (any, error) {
