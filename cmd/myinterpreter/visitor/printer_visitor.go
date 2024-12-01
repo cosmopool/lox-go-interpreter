@@ -10,6 +10,10 @@ type PrinterVisitor struct {
 	stringifyVisitor StringifyVisitor
 }
 
+func (p PrinterVisitor) Print(expr core.Expression) (any, core.Error) {
+  return expr.Accept(p)
+}
+
 func (p PrinterVisitor) VisitBinaryExpr(expr core.Binary) (any, core.Error) {
 	str, err := p.stringifyVisitor.VisitBinaryExpr(expr)
 	if err.Err != nil {

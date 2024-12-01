@@ -6,14 +6,18 @@ import (
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 )
 
-type EvaluatorVisitor struct{}
+type Interpreter struct{}
 
-func (p EvaluatorVisitor) VisitBinaryExpr(expr core.Binary) (any, core.Error) {
-	rightExpr, err := expr.Right.Accept(p)
+func (i Interpreter) Interpret(expr core.Expression) (any, core.Error) {
+	return expr.Accept(i)
+}
+
+func (i Interpreter) VisitBinaryExpr(expr core.Binary) (any, core.Error) {
+	rightExpr, err := expr.Right.Accept(i)
 	if err.Err != nil {
 		return nil, err
 	}
-	leftExpr, err := expr.Left.Accept(p)
+	leftExpr, err := expr.Left.Accept(i)
 	if err.Err != nil {
 		return nil, err
 	}
@@ -92,8 +96,8 @@ func (p EvaluatorVisitor) VisitBinaryExpr(expr core.Binary) (any, core.Error) {
 	}
 }
 
-func (p EvaluatorVisitor) VisitGroupExpr(expr core.Grouping) (any, core.Error) {
-	value, err := expr.Expr.Accept(p)
+func (i Interpreter) VisitGroupExpr(expr core.Grouping) (any, core.Error) {
+	value, err := expr.Expr.Accept(i)
 	if err.Err != nil {
 		return nil, err
 	}
@@ -101,12 +105,12 @@ func (p EvaluatorVisitor) VisitGroupExpr(expr core.Grouping) (any, core.Error) {
 	return value, core.Error{}
 }
 
-func (p EvaluatorVisitor) VisitLiteralExpr(expr core.Literal) (any, core.Error) {
+func (i Interpreter) VisitLiteralExpr(expr core.Literal) (any, core.Error) {
 	return expr.Value, core.Error{}
 }
 
-func (p EvaluatorVisitor) VisitUnaryExpr(expr core.Unary) (any, core.Error) {
-	right, err := expr.Right.Accept(p)
+func (i Interpreter) VisitUnaryExpr(expr core.Unary) (any, core.Error) {
+	right, err := expr.Right.Accept(i)
 	if err.Err != nil {
 		return nil, err
 	}

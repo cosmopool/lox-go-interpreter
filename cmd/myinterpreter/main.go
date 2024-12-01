@@ -32,9 +32,9 @@ func main() {
 		}
 
 		// visit expressions
-		visitor := visitor.PrinterVisitor{}
+		printer := visitor.PrinterVisitor{}
 		for _, expr := range expressions {
-			expr.Accept(visitor)
+			printer.Print(expr)
 		}
 
 	case "evaluate":
@@ -46,9 +46,9 @@ func main() {
 		}
 
 		// visit expressions
-		visitor := visitor.EvaluatorVisitor{}
+		interpreter := visitor.Interpreter{}
 		for _, expr := range expressions {
-			value, err := expr.Accept(visitor)
+			value, err := interpreter.Interpret(expr)
 			if err.Err != nil {
 				printError(err)
 				os.Exit(70)
