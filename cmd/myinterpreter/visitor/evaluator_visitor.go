@@ -9,12 +9,21 @@ import (
 
 type EvaluatorVisitor struct{}
 
+func getMultipleFloat(a any, b any) (float64, float64, error) {
+	aFloat, err := getFloat(a)
+	if err != nil {
+		return 0, 0, err
+	}
+	bFloat, err := getFloat(b)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return aFloat, bFloat, nil
+}
+
 func (p EvaluatorVisitor) VisitBinaryExpr(expr core.Binary) (any, error) {
 	rightExpr, err := expr.Right.Accept(p)
-	if err != nil {
-		return nil, err
-	}
-	right, err := getFloat(rightExpr)
 	if err != nil {
 		return nil, err
 	}
@@ -22,23 +31,35 @@ func (p EvaluatorVisitor) VisitBinaryExpr(expr core.Binary) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	left, err := getFloat(leftExpr)
-	if err != nil {
-		return nil, err
-	}
 
 	switch expr.Operator.Type {
 	case core.MINUS:
+		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		if err != nil {
+			return nil, err
+		}
 		return left - right, nil
 
 	case core.STAR:
+		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		if err != nil {
+			return nil, err
+		}
 		return left * right, nil
 
 	case core.SLASH:
+		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		if err != nil {
+			return nil, err
+		}
 		return left / right, nil
-
-	case core.BANG:
-		return !isTruthy(right), nil
+    
+  case core.PLUS:
+		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		if err != nil {
+			return nil, err
+		}
+		return left + right, nil
 
 	default:
 		return nil, nil
