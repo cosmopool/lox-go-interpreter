@@ -52,6 +52,7 @@ func main() {
 		for _, expr := range expressions {
 			value, err := expr.Accept(visitor)
 			if err != nil {
+				fmt.Fprintf(os.Stderr, "%v", err)
 				os.Exit(70)
 			}
 
