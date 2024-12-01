@@ -2,8 +2,7 @@ package core
 
 import (
 	"fmt"
-
-	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/utils"
+	"strings"
 )
 
 type tokenType = string
@@ -80,5 +79,26 @@ type Token struct {
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("%v %s %v\n", t.Type, t.Lexeme, utils.VariableToString(t.Literal, true))
+	if t.Literal == nil {
+		return fmt.Sprintf("%v %s null\n", t.Type, t.Lexeme)
+	}
+
+	_, isFloat := t.Literal.(float64)
+	if !isFloat {
+		return fmt.Sprintf("%v %s %v\n", t.Type, t.Lexeme, t.Literal)
+	}
+
+	separated := strings.Split(fmt.Sprint(t.Literal), ".")
+	if len(separated) == 1 {
+		return fmt.Sprintf("%v %s %.1f\n", t.Type, t.Lexeme, t.Literal)
+	}
+
+	decimalPart := separated[len(separated)-1]
+	decimalPart = strings.ReplaceAll(decimalPart, "0", "")
+
+	if decimalPart == "" {
+		return fmt.Sprintf("%v %s %.1f\n", t.Type, t.Lexeme, t.Literal)
+	}
+
+	return fmt.Sprintf("%v %s %g\n", t.Type, t.Lexeme, t.Literal)
 }
