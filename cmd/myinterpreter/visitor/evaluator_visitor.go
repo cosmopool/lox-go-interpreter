@@ -13,7 +13,12 @@ func (p EvaluatorVisitor) VisitBinaryExpr(expr core.Binary) (any, error) {
 }
 
 func (p EvaluatorVisitor) VisitGroupExpr(expr core.Grouping) (any, error) {
-	return nil, nil
+	value, err := expr.Expr.Accept(p)
+	if err != nil {
+		return nil, err
+	}
+
+	return value, nil
 }
 
 func (p EvaluatorVisitor) VisitLiteralExpr(expr core.Literal) (any, error) {
