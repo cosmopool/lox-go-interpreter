@@ -2,6 +2,7 @@ package visitor
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 )
@@ -22,18 +23,41 @@ func (p EvaluatorVisitor) VisitGroupExpr(expr core.Grouping) (any, error) {
 }
 
 func (p EvaluatorVisitor) VisitLiteralExpr(expr core.Literal) (any, error) {
-	if expr.Value == nil {
-
-		fmt.Println("nil")
-		return nil, nil
-	}
-
-	fmt.Println(expr.Value)
-	return nil, nil
+	return expr.Value, nil
 }
 
 func (p EvaluatorVisitor) VisitUnaryExpr(expr core.Unary) (any, error) {
-	return nil, nil
+	right, err := expr.Right.Accept(p)
+	if err != nil {
+		return nil, err
+	}
+
+	switch expr.Operator.Type {
+	case core.MINUS:
+		float, err := getFloat(right)
+		if err != nil {
+			return nil, err
+		}
+		return -float, nil
+
+	case core.BANG:
+		return !isTruthy(right), nil
+
+	default:
+		return nil, nil
+	}
+}
+
+func isTruthy(value any) bool {
+	if value == nil {
+		return false
+	}
+
+	if boolean, ok := value.(bool); ok {
+		return boolean
+	}
+
+	return true
 }
 
 func isEqual(a any, b any) bool {
@@ -46,4 +70,28 @@ func isEqual(a any, b any) bool {
 	}
 
 	return a == b
+}
+func getFloat(unk any) (float64, error) {
+	switch i := unk.(type) {
+	case float64:
+		return i, nil
+	case float32:
+		return float64(i), nil
+	case int64:
+		return float64(i), nil
+	case int32:
+		return float64(i), nil
+	case int:
+		return float64(i), nil
+	case uint64:
+		return float64(i), nil
+	case uint32:
+		return float64(i), nil
+	case uint:
+		return float64(i), nil
+	case string:
+		return strconv.ParseFloat(i, 64)
+	}
+
+	return 0, fmt.Errorf("Could not parse given literal to float %v", unk)
 }

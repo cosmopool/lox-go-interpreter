@@ -50,7 +50,17 @@ func main() {
 		// visit expressions
 		visitor := visitor.EvaluatorVisitor{}
 		for _, expr := range expressions {
-			expr.Accept(visitor)
+			value, err := expr.Accept(visitor)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(65)
+			}
+
+			if value == nil {
+				fmt.Println("nil")
+			} else {
+				fmt.Println(value)
+			}
 		}
 
 	default:
