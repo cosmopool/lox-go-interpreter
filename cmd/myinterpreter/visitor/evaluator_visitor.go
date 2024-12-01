@@ -49,7 +49,7 @@ func (p EvaluatorVisitor) VisitBinaryExpr(expr core.Binary) (any, error) {
 
 		left, right, err := getMultipleFloat(leftExpr, rightExpr)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Operands must be two numbers or two strings.")
 		}
 		return left + right, nil
 
