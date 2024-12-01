@@ -35,3 +35,15 @@ func (p EvaluatorVisitor) VisitLiteralExpr(expr core.Literal) (any, error) {
 func (p EvaluatorVisitor) VisitUnaryExpr(expr core.Unary) (any, error) {
 	return nil, nil
 }
+
+func isEqual(a any, b any) bool {
+	if a == nil && b == nil {
+		return true
+	}
+
+	if a == nil {
+		return true
+	}
+
+	return a == b
+}
