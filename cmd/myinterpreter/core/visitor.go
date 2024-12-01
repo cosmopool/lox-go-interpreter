@@ -2,8 +2,8 @@ package core
 
 
 type ExpressionVisitor interface {
-	VisitBinaryExpr(expr Binary) error
-	VisitGroupExpr(expr Grouping) error
-	VisitLiteralExpr(expr Literal) error
-	VisitUnaryExpr(expr Unary) error
+	VisitBinaryExpr(expr Binary) (any, error)
+	VisitGroupExpr(expr Grouping) (any, error)
+	VisitLiteralExpr(expr Literal) (any, error)
+	VisitUnaryExpr(expr Unary) (any, error)
 }

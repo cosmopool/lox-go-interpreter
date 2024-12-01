@@ -1,7 +1,7 @@
 package core
 
 type Expression interface {
-	Accept(visitor ExpressionVisitor) error
+	Accept(visitor ExpressionVisitor) (any, error)
 }
 
 type Binary struct {
@@ -10,7 +10,7 @@ type Binary struct {
 	Right    Expression
 }
 
-func (b Binary) Accept(visitor ExpressionVisitor) error {
+func (b Binary) Accept(visitor ExpressionVisitor) (any, error) {
 	return visitor.VisitBinaryExpr(b)
 }
 
@@ -18,7 +18,7 @@ type Grouping struct {
 	Expr Expression
 }
 
-func (g Grouping) Accept(visitor ExpressionVisitor) error {
+func (g Grouping) Accept(visitor ExpressionVisitor) (any, error) {
 	return visitor.VisitGroupExpr(g)
 }
 
@@ -26,7 +26,7 @@ type Literal struct {
 	Value any
 }
 
-func (l Literal) Accept(visitor ExpressionVisitor) error {
+func (l Literal) Accept(visitor ExpressionVisitor) (any, error) {
 	return visitor.VisitLiteralExpr(l)
 }
 
@@ -35,7 +35,7 @@ type Unary struct {
 	Right    Expression
 }
 
-func (u Unary) Accept(visitor ExpressionVisitor) error {
+func (u Unary) Accept(visitor ExpressionVisitor) (any, error) {
 	return visitor.VisitUnaryExpr(u)
 }
 
