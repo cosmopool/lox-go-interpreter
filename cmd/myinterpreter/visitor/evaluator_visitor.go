@@ -87,7 +87,6 @@ func (p EvaluatorVisitor) VisitBinaryExpr(expr core.Binary) (any, error) {
 	case core.BANG_EQUAL:
 		return leftExpr != rightExpr, nil
 
-
 	default:
 		return nil, nil
 	}
@@ -170,11 +169,9 @@ func getFloat(unk any) (float64, error) {
 		return float64(i), nil
 	case uint:
 		return float64(i), nil
-	case string:
-		return 0, fmt.Errorf("Can't evaluate strings. This is reserved for numbers only.\nGot: %v", unk)
 	}
 
-	return 0, fmt.Errorf("Could not parse given literal to float %v", unk)
+	return 0, fmt.Errorf("Operand must be a number.")
 }
 
 func getMultipleFloat(a any, b any) (float64, float64, error) {

@@ -52,8 +52,7 @@ func main() {
 		for _, expr := range expressions {
 			value, err := expr.Accept(visitor)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(65)
+				os.Exit(70)
 			}
 
 			if value == nil {
