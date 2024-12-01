@@ -8,13 +8,13 @@ import (
 
 type EvaluatorVisitor struct{}
 
-func (p EvaluatorVisitor) VisitBinaryExpr(expr core.Binary) (any, error) {
+func (p EvaluatorVisitor) VisitBinaryExpr(expr core.Binary) (any, core.Error) {
 	rightExpr, err := expr.Right.Accept(p)
-	if err != nil {
+	if err.Err != nil {
 		return nil, err
 	}
 	leftExpr, err := expr.Left.Accept(p)
-	if err != nil {
+	if err.Err != nil {
 		return nil, err
 	}
 
@@ -22,92 +22,92 @@ func (p EvaluatorVisitor) VisitBinaryExpr(expr core.Binary) (any, error) {
 	case core.MINUS:
 		left, right, err := getMultipleFloat(leftExpr, rightExpr)
 		if err != nil {
-			return nil, err
+			return nil, core.Error{Line: expr.Operator.Line, Err: err}
 		}
-		return left - right, nil
+		return left - right, core.Error{}
 
 	case core.STAR:
 		left, right, err := getMultipleFloat(leftExpr, rightExpr)
 		if err != nil {
-			return nil, err
+			return nil, core.Error{Line: expr.Operator.Line, Err: err}
 		}
-		return left * right, nil
+		return left * right, core.Error{}
 
 	case core.SLASH:
 		left, right, err := getMultipleFloat(leftExpr, rightExpr)
 		if err != nil {
-			return nil, err
+			return nil, core.Error{Line: expr.Operator.Line, Err: err}
 		}
-		return left / right, nil
+		return left / right, core.Error{}
 
 	case core.PLUS:
 		leftStr, leftIsString := leftExpr.(string)
 		rightStr, rightIsString := rightExpr.(string)
 		if leftIsString && rightIsString {
-			return fmt.Sprintf("%s%s", leftStr, rightStr), nil
+			return fmt.Sprintf("%s%s", leftStr, rightStr), core.Error{}
 		}
 
 		left, right, err := getMultipleFloat(leftExpr, rightExpr)
 		if err != nil {
-			return nil, fmt.Errorf("Operands must be two numbers or two strings.")
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be two numbers or two strings.")}
 		}
-		return left + right, nil
+		return left + right, core.Error{}
 
 	case core.GREATER:
 		left, right, err := getMultipleFloat(leftExpr, rightExpr)
 		if err != nil {
-			return nil, err
+			return nil, core.Error{Line: expr.Operator.Line, Err: err}
 		}
-		return left > right, nil
+		return left > right, core.Error{}
 
 	case core.GREATER_EQUAL:
 		left, right, err := getMultipleFloat(leftExpr, rightExpr)
 		if err != nil {
-			return nil, err
+			return nil, core.Error{Line: expr.Operator.Line, Err: err}
 		}
-		return left >= right, nil
+		return left >= right, core.Error{}
 
 	case core.LESS:
 		left, right, err := getMultipleFloat(leftExpr, rightExpr)
 		if err != nil {
-			return nil, err
+			return nil, core.Error{Line: expr.Operator.Line, Err: err}
 		}
-		return left < right, nil
+		return left < right, core.Error{}
 
 	case core.LESS_EQUAL:
 		left, right, err := getMultipleFloat(leftExpr, rightExpr)
 		if err != nil {
-			return nil, err
+			return nil, core.Error{Line: expr.Operator.Line, Err: err}
 		}
-		return left <= right, nil
+		return left <= right, core.Error{}
 
 	case core.EQUAL_EQUAL:
-		return isEqual(leftExpr, rightExpr), nil
+		return isEqual(leftExpr, rightExpr), core.Error{}
 
 	case core.BANG_EQUAL:
-		return !isEqual(leftExpr, rightExpr), nil
+		return !isEqual(leftExpr, rightExpr), core.Error{}
 
 	default:
-		return nil, nil
+		return nil, core.Error{}
 	}
 }
 
-func (p EvaluatorVisitor) VisitGroupExpr(expr core.Grouping) (any, error) {
+func (p EvaluatorVisitor) VisitGroupExpr(expr core.Grouping) (any, core.Error) {
 	value, err := expr.Expr.Accept(p)
-	if err != nil {
+	if err.Err != nil {
 		return nil, err
 	}
 
-	return value, nil
+	return value, core.Error{}
 }
 
-func (p EvaluatorVisitor) VisitLiteralExpr(expr core.Literal) (any, error) {
-	return expr.Value, nil
+func (p EvaluatorVisitor) VisitLiteralExpr(expr core.Literal) (any, core.Error) {
+	return expr.Value, core.Error{}
 }
 
-func (p EvaluatorVisitor) VisitUnaryExpr(expr core.Unary) (any, error) {
+func (p EvaluatorVisitor) VisitUnaryExpr(expr core.Unary) (any, core.Error) {
 	right, err := expr.Right.Accept(p)
-	if err != nil {
+	if err.Err != nil {
 		return nil, err
 	}
 
@@ -115,15 +115,15 @@ func (p EvaluatorVisitor) VisitUnaryExpr(expr core.Unary) (any, error) {
 	case core.MINUS:
 		float, err := getFloat(right)
 		if err != nil {
-			return nil, err
+			return nil, core.Error{Line: expr.Operator.Line, Err: err}
 		}
-		return -float, nil
+		return -float, core.Error{}
 
 	case core.BANG:
-		return !isTruthy(right), nil
+		return !isTruthy(right), core.Error{}
 
 	default:
-		return nil, nil
+		return nil, core.Error{}
 	}
 }
 

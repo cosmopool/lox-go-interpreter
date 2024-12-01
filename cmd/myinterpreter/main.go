@@ -49,8 +49,8 @@ func main() {
 		visitor := visitor.EvaluatorVisitor{}
 		for _, expr := range expressions {
 			value, err := expr.Accept(visitor)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "%v", err)
+			if err.Err != nil {
+				printError(err)
 				os.Exit(70)
 			}
 
