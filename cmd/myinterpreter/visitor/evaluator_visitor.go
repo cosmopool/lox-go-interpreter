@@ -103,6 +103,7 @@ func isEqual(a any, b any) bool {
 
 	return a == b
 }
+
 func getFloat(unk any) (float64, error) {
 	switch i := unk.(type) {
 	case float64:
