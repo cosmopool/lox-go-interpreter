@@ -82,10 +82,10 @@ func (p EvaluatorVisitor) VisitBinaryExpr(expr core.Binary) (any, error) {
 		return left <= right, nil
 
 	case core.EQUAL_EQUAL:
-		return leftExpr == rightExpr, nil
+		return isEqual(leftExpr, rightExpr), nil
 
 	case core.BANG_EQUAL:
-		return leftExpr != rightExpr, nil
+		return !isEqual(leftExpr, rightExpr), nil
 
 	default:
 		return nil, nil
