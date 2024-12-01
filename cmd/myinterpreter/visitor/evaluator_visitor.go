@@ -53,6 +53,34 @@ func (p EvaluatorVisitor) VisitBinaryExpr(expr core.Binary) (any, error) {
 		}
 		return left + right, nil
 
+	case core.GREATER:
+		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		if err != nil {
+			return nil, err
+		}
+		return left > right, nil
+
+	case core.GREATER_EQUAL:
+		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		if err != nil {
+			return nil, err
+		}
+		return left >= right, nil
+
+	case core.LESS:
+		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		if err != nil {
+			return nil, err
+		}
+		return left < right, nil
+
+	case core.LESS_EQUAL:
+		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		if err != nil {
+			return nil, err
+		}
+		return left <= right, nil
+
 	default:
 		return nil, nil
 	}
