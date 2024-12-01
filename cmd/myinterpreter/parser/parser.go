@@ -6,56 +6,54 @@ import (
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 )
 
-type Parser struct {
-	Tokens      []core.Token
-	expressions []core.Expression
-	position    int
+var tokens = []core.Token{}
+var expressions = []core.Expression{}
+var position = 0
+
+func current() core.Token {
+	return tokens[position]
 }
 
-func (p *Parser) current() core.Token {
-	return p.Tokens[p.position]
+func previous() core.Token {
+	return tokens[position-1]
 }
 
-func (p *Parser) previous() core.Token {
-	return p.Tokens[p.position-1]
+func isAtEnd() bool {
+	return current().Type == core.EOF
 }
 
-func (p *Parser) isAtEnd() bool {
-	return p.current().Type == core.EOF
-}
-
-func (p *Parser) advance() core.Token {
-	if p.isAtEnd() {
-		return p.current()
+func advance() core.Token {
+	if isAtEnd() {
+		return current()
 	}
 
-	p.position++
-	return p.previous()
+	position++
+	return previous()
 }
 
-func (p *Parser) match(tokenTypes ...string) bool {
+func match(tokenTypes ...string) bool {
 	for _, tokenType := range tokenTypes {
-		if p.current().Type == tokenType {
-			p.advance()
+		if current().Type == tokenType {
+			advance()
 			return true
 		}
 	}
 	return false
 }
 
-func (p *Parser) expression() (core.Expression, *core.Error) {
-	return p.equality()
+func expression() (core.Expression, *core.Error) {
+	return equality()
 }
 
-func (p *Parser) equality() (core.Expression, *core.Error) {
-	expr, err := p.comparison()
+func equality() (core.Expression, *core.Error) {
+	expr, err := comparison()
 	if err != nil {
 		return nil, err
 	}
 
-	for p.match(core.EQUAL_EQUAL, core.BANG_EQUAL) {
-		operator := p.previous()
-		right, err := p.equality()
+	for match(core.EQUAL_EQUAL, core.BANG_EQUAL) {
+		operator := previous()
+		right, err := equality()
 		if err != nil {
 			return nil, err
 		}
@@ -66,15 +64,15 @@ func (p *Parser) equality() (core.Expression, *core.Error) {
 	return expr, nil
 }
 
-func (p *Parser) comparison() (core.Expression, *core.Error) {
-	expr, err := p.term()
+func comparison() (core.Expression, *core.Error) {
+	expr, err := term()
 	if err != nil {
 		return nil, err
 	}
 
-	for p.match(core.GREATER, core.GREATER_EQUAL, core.LESS, core.LESS_EQUAL) {
-		operator := p.previous()
-		right, err := p.term()
+	for match(core.GREATER, core.GREATER_EQUAL, core.LESS, core.LESS_EQUAL) {
+		operator := previous()
+		right, err := term()
 		if err != nil {
 			return nil, err
 		}
@@ -85,15 +83,15 @@ func (p *Parser) comparison() (core.Expression, *core.Error) {
 	return expr, nil
 }
 
-func (p *Parser) term() (core.Expression, *core.Error) {
-	expr, err := p.factor()
+func term() (core.Expression, *core.Error) {
+	expr, err := factor()
 	if err != nil {
 		return nil, err
 	}
 
-	for p.match(core.MINUS, core.PLUS) {
-		operator := p.previous()
-		right, err := p.factor()
+	for match(core.MINUS, core.PLUS) {
+		operator := previous()
+		right, err := factor()
 		if err != nil {
 			return nil, err
 		}
@@ -104,15 +102,15 @@ func (p *Parser) term() (core.Expression, *core.Error) {
 	return expr, nil
 }
 
-func (p *Parser) factor() (core.Expression, *core.Error) {
-	expr, err := p.unary()
+func factor() (core.Expression, *core.Error) {
+	expr, err := unary()
 	if err != nil {
 		return expr, err
 	}
 
-	for p.match(core.SLASH, core.STAR) {
-		operator := p.previous()
-		right, err := p.unary()
+	for match(core.SLASH, core.STAR) {
+		operator := previous()
+		right, err := unary()
 		if err != nil {
 			return expr, err
 		}
@@ -123,66 +121,67 @@ func (p *Parser) factor() (core.Expression, *core.Error) {
 	return expr, nil
 }
 
-func (p *Parser) unary() (core.Expression, *core.Error) {
-	if p.match(core.BANG, core.MINUS) {
-		operator := p.previous()
-		right, err := p.unary()
+func unary() (core.Expression, *core.Error) {
+	if match(core.BANG, core.MINUS) {
+		operator := previous()
+		right, err := unary()
 		if err != nil {
 			return nil, err
 		}
 		return core.Unary{Operator: operator, Right: right}, nil
 	}
 
-	return p.primary()
+	return primary()
 }
 
-func (p *Parser) primary() (core.Expression, *core.Error) {
-	if p.match(core.FALSE) {
+func primary() (core.Expression, *core.Error) {
+	if match(core.FALSE) {
 		return core.Literal{Value: false}, nil
 	}
 
-	if p.match(core.TRUE) {
+	if match(core.TRUE) {
 		return core.Literal{Value: true}, nil
 	}
 
-	if p.match(core.NIL) {
+	if match(core.NIL) {
 		return core.Literal{Value: nil}, nil
 	}
 
-	if p.match(core.NUMBER, core.STRING) {
-		return core.Literal{Value: p.previous().Literal}, nil
+	if match(core.NUMBER, core.STRING) {
+		return core.Literal{Value: previous().Literal}, nil
 	}
 
-	if !p.match(core.LEFT_PAREN) {
+	if !match(core.LEFT_PAREN) {
 		err := fmt.Errorf("Expect ')' after expression.")
-		return nil, &core.Error{Line: p.current().Line, Err: err}
+		return nil, &core.Error{Line: current().Line, Err: err}
 	}
 
-	expr, err := p.expression()
+	expr, err := expression()
 	if err != nil {
 		return expr, err
 	}
 
 	if expr == nil {
-		return nil, &core.Error{Line: p.current().Line, Err: fmt.Errorf("Empty group")}
+		return nil, &core.Error{Line: current().Line, Err: fmt.Errorf("Empty group")}
 	}
 
-	if !p.match(core.RIGHT_PAREN) {
+	if !match(core.RIGHT_PAREN) {
 		err := fmt.Errorf("Expect ')' after expression.")
-		return expr, &core.Error{Line: p.current().Line, Err: err}
+		return expr, &core.Error{Line: current().Line, Err: err}
 	}
 
 	return core.Grouping{Expr: expr}, nil
 }
 
-func (p *Parser) Parse() ([]core.Expression, *core.Error) {
-	for !p.isAtEnd() {
-		expr, err := p.expression()
+func Parse(scannedTokens []core.Token) ([]core.Expression, *core.Error) {
+	tokens = scannedTokens
+	for !isAtEnd() {
+		expr, err := expression()
 		if err != nil {
-			return p.expressions, err
+			return expressions, err
 		}
 
-		p.expressions = append(p.expressions, expr)
+		expressions = append(expressions, expr)
 	}
-	return p.expressions, nil
+	return expressions, nil
 }

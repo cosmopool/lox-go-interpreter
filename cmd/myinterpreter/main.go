@@ -25,8 +25,7 @@ func main() {
 
 	case "parse":
 		tokens := tokenize(filename, false)
-		parser := parser.Parser{Tokens: tokens}
-		expressions, err := parser.Parse()
+		expressions, err := parser.Parse(tokens)
 		if err != nil {
 			printError(*err)
 			os.Exit(65)
@@ -40,8 +39,7 @@ func main() {
 
 	case "evaluate":
 		tokens := tokenize(filename, false)
-		parser := parser.Parser{Tokens: tokens}
-		expressions, err := parser.Parse()
+		expressions, err := parser.Parse(tokens)
 		if err != nil {
 			printError(*err)
 			os.Exit(65)

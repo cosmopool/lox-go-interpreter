@@ -226,8 +226,7 @@ func TestParserMissingExpression(t *testing.T) {
 		{Type: core.EOF, Lexeme: "EOF", Literal: nil},
 	}
 
-	parser := Parser{Tokens: tokens}
-	e, err := parser.Parse()
+	e, err := Parse(tokens)
 	if err != nil {
 		t.Fatalf("was not expecting any errors, but got: %v", err)
 	}
