@@ -24,23 +24,23 @@ func (i Interpreter) VisitBinaryExpr(expr core.Binary) (any, core.Error) {
 
 	switch expr.Operator.Type {
 	case core.MINUS:
-		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: err}
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers.")}
 		}
 		return left - right, core.Error{}
 
 	case core.STAR:
-		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: err}
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers.")}
 		}
 		return left * right, core.Error{}
 
 	case core.SLASH:
-		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: err}
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers.")}
 		}
 		return left / right, core.Error{}
 
@@ -51,37 +51,37 @@ func (i Interpreter) VisitBinaryExpr(expr core.Binary) (any, core.Error) {
 			return fmt.Sprintf("%s%s", leftStr, rightStr), core.Error{}
 		}
 
-		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
 			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be two numbers or two strings.")}
 		}
 		return left + right, core.Error{}
 
 	case core.GREATER:
-		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: err}
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers.")}
 		}
 		return left > right, core.Error{}
 
 	case core.GREATER_EQUAL:
-		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: err}
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers.")}
 		}
 		return left >= right, core.Error{}
 
 	case core.LESS:
-		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: err}
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers.")}
 		}
 		return left < right, core.Error{}
 
 	case core.LESS_EQUAL:
-		left, right, err := getMultipleFloat(leftExpr, rightExpr)
+		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: err}
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers.")}
 		}
 		return left <= right, core.Error{}
 
@@ -117,7 +117,7 @@ func (i Interpreter) VisitUnaryExpr(expr core.Unary) (any, core.Error) {
 
 	switch expr.Operator.Type {
 	case core.MINUS:
-		float, err := getFloat(right)
+		float, err := getFloat(expr.Operator, right)
 		if err != nil {
 			return nil, core.Error{Line: expr.Operator.Line, Err: err}
 		}
@@ -155,8 +155,8 @@ func isEqual(a any, b any) bool {
 	return a == b
 }
 
-func getFloat(unk any) (float64, error) {
-	switch i := unk.(type) {
+func getFloat(operator core.Token, operand any) (float64, error) {
+	switch i := operand.(type) {
 	case float64:
 		return i, nil
 	case float32:
@@ -175,15 +175,15 @@ func getFloat(unk any) (float64, error) {
 		return float64(i), nil
 	}
 
-	return 0, fmt.Errorf("Operand must be a number.")
+	return 0, fmt.Errorf("%v Operand must be a number.", operator)
 }
 
-func getMultipleFloat(a any, b any) (float64, float64, error) {
-	aFloat, err := getFloat(a)
+func getMultipleFloat(operator core.Token, a any, b any) (float64, float64, error) {
+	aFloat, err := getFloat(operator, a)
 	if err != nil {
 		return 0, 0, err
 	}
-	bFloat, err := getFloat(b)
+	bFloat, err := getFloat(operator, b)
 	if err != nil {
 		return 0, 0, err
 	}
