@@ -25,7 +25,7 @@ func main() {
 
 	case "parse":
 		tokens := tokenize(filename, false)
-		expressions, err := parser.Parse(tokens)
+		expressions, err := parser.ParseExpressions(tokens)
 		if err != nil {
 			printError(*err)
 			os.Exit(65)
@@ -34,21 +34,21 @@ func main() {
 		// visit expressions
 		printer := visitor.PrinterVisitor{}
 		for _, expr := range expressions {
-			printer.Print(expr)
+			printer.PrintExpression(expr)
 		}
 
 	case "evaluate":
 		tokens := tokenize(filename, false)
-		expressions, err := parser.Parse(tokens)
+		expressions, err := parser.ParseExpressions(tokens)
 		if err != nil {
 			printError(*err)
 			os.Exit(65)
 		}
 
 		// visit expressions
-		interpreter := visitor.Interpreter{}
+		evaluator := visitor.Evaluator{}
 		for _, expr := range expressions {
-			value, err := interpreter.Interpret(expr)
+			value, err := evaluator.Evaluate(expr)
 			if err.Err != nil {
 				printError(err)
 				os.Exit(70)
@@ -58,6 +58,24 @@ func main() {
 				fmt.Println("nil")
 			} else {
 				fmt.Println(value)
+			}
+		}
+
+	case "run":
+		tokens := tokenize(filename, false)
+		statements, err := parser.Parse(tokens)
+		if err != nil {
+			printError(*err)
+			os.Exit(65)
+		}
+
+		// visit expressions
+		interpreter := visitor.Interpreter{}
+		for _, expr := range statements {
+			_, err := interpreter.Interpret(expr)
+			if err.Err != nil {
+				printError(err)
+				os.Exit(70)
 			}
 		}
 

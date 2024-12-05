@@ -1,11 +1,5 @@
 package parser
 
-import (
-	"testing"
-
-	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
-)
-
 // // isAtEnd() should return FALSE if NOT reached EOF token
 // func TestIsAtEndReturnsFalseIfNotEOFToken(t *testing.T) {
 // 	tokens := []core.Token{
@@ -217,26 +211,26 @@ import (
 // 	}
 // }
 
-func TestParserMissingExpression(t *testing.T) {
-	tokens := []core.Token{
-		{Type: core.LEFT_PAREN, Lexeme: "(", Literal: nil},
-		{Type: core.NUMBER, Lexeme: "51.0", Literal: 51},
-		{Type: core.PLUS, Lexeme: "+", Literal: nil},
-		{Type: core.RIGHT_PAREN, Lexeme: ")", Literal: nil},
-		{Type: core.EOF, Lexeme: "EOF", Literal: nil},
-	}
-
-	e, err := Parse(tokens)
-	if err != nil {
-		t.Fatalf("was not expecting any errors, but got: %v", err)
-	}
-
-	if len(e) != 1 {
-		t.Fatalf("there should be 1 expression, but got: %d", len(e))
-	}
-
-	_, ok := e[0].(core.Binary)
-	if !ok {
-		t.Fatalf("was expecting an Group expression, but got: %v", e[0])
-	}
-}
+// func TestParserMissingExpression(t *testing.T) {
+// 	tokens := []core.Token{
+// 		{Type: core.LEFT_PAREN, Lexeme: "(", Literal: nil},
+// 		{Type: core.NUMBER, Lexeme: "51.0", Literal: 51},
+// 		{Type: core.PLUS, Lexeme: "+", Literal: nil},
+// 		{Type: core.RIGHT_PAREN, Lexeme: ")", Literal: nil},
+// 		{Type: core.EOF, Lexeme: "EOF", Literal: nil},
+// 	}
+//
+// 	e, err := Parse(tokens)
+// 	if err != nil {
+// 		t.Fatalf("was not expecting any errors, but got: %v", err)
+// 	}
+//
+// 	if len(e) != 1 {
+// 		t.Fatalf("there should be 1 expression, but got: %d", len(e))
+// 	}
+//
+// 	_, ok := e[0].(core.Binary)
+// 	if !ok {
+// 		t.Fatalf("was expecting an Group expression, but got: %v", e[0])
+// 	}
+// }

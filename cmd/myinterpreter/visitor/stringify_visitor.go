@@ -9,6 +9,26 @@ import (
 
 type StringifyVisitor struct{}
 
+func (p StringifyVisitor) VisitExpressionStmt(stmt core.ExpressionStmt) (any, core.Error) {
+	str, err := stmt.Expr.Accept(p)
+	if err.Err != nil {
+		return nil, err
+	}
+
+	fmt.Println(str)
+	return str, core.Error{}
+}
+
+func (p StringifyVisitor) VisitPrintStmt(stmt core.PrintStmt) (any, core.Error) {
+	str, err := stmt.Expr.Accept(p)
+	if err.Err != nil {
+		return nil, err
+	}
+
+	fmt.Println(str)
+	return str, core.Error{}
+}
+
 func (p StringifyVisitor) VisitBinaryExpr(expr core.Binary) (any, core.Error) {
 	right, err := expr.Right.Accept(p)
 	if err.Err != nil {

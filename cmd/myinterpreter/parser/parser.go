@@ -7,6 +7,7 @@ import (
 )
 
 var tokens = []core.Token{}
+var statements = []core.Statement{}
 var expressions = []core.Expression{}
 var position = 0
 
@@ -39,6 +40,50 @@ func match(tokenTypes ...string) bool {
 		}
 	}
 	return false
+}
+
+func isNextTokenSemicolon() *core.Error {
+	if match(core.SEMICOLON) {
+		return nil
+	}
+
+	err := fmt.Errorf("Expect ';' after expression.")
+	return &core.Error{Line: current().Line, Err: err}
+}
+
+func statement() (core.Statement, *core.Error) {
+	if match(core.PRINT) {
+		return printStatement()
+	}
+	return expressionStatement()
+}
+
+func printStatement() (core.Statement, *core.Error) {
+	value, err := expression()
+	if err != nil {
+		return nil, err
+	}
+
+	err = isNextTokenSemicolon()
+	if err != nil {
+		return nil, err
+	}
+
+	return core.PrintStmt{Expr: value}, nil
+}
+
+func expressionStatement() (core.Statement, *core.Error) {
+	expr, err := expression()
+	if err != nil {
+		return nil, err
+	}
+
+	err = isNextTokenSemicolon()
+	if err != nil {
+		return nil, err
+	}
+
+	return core.ExpressionStmt{Expr: expr}, nil
 }
 
 func expression() (core.Expression, *core.Error) {
@@ -173,7 +218,20 @@ func primary() (core.Expression, *core.Error) {
 	return core.Grouping{Expr: expr}, nil
 }
 
-func Parse(scannedTokens []core.Token) ([]core.Expression, *core.Error) {
+func Parse(scannedTokens []core.Token) ([]core.Statement, *core.Error) {
+	tokens = scannedTokens
+	for !isAtEnd() {
+		stmt, err := statement()
+		if err != nil {
+			return statements, err
+		}
+
+		statements = append(statements, stmt)
+	}
+	return statements, nil
+}
+
+func ParseExpressions(scannedTokens []core.Token) ([]core.Expression, *core.Error) {
 	tokens = scannedTokens
 	for !isAtEnd() {
 		expr, err := expression()
