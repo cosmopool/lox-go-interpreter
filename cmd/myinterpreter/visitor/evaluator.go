@@ -2,7 +2,6 @@ package visitor
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 )
@@ -11,44 +10,6 @@ type Evaluator struct{}
 
 func (i Evaluator) Evaluate(expr core.Expression) (any, core.Error) {
 	return expr.Accept(i)
-}
-
-func (i Evaluator) VisitExpressionStmt(stmt core.ExpressionStmt) (any, core.Error) {
-	return i.Evaluate(stmt.Expr)
-}
-
-func (i Evaluator) VisitPrintStmt(stmt core.PrintStmt) (any, core.Error) {
-	value, err := stmt.Expr.Accept(i)
-	if err.Err != nil {
-		return nil, err
-	}
-
-	if value == nil {
-		fmt.Println("nil")
-		return nil, core.Error{}
-	}
-
-	_, isFloat := value.(float64)
-	if !isFloat {
-		fmt.Println(value)
-		return nil, core.Error{}
-	}
-
-	separated := strings.Split(fmt.Sprint(value), ".")
-	if len(separated) == 1 {
-		fmt.Println(value)
-		return nil, core.Error{}
-	}
-
-	decimalPart := separated[len(separated)-1]
-	decimalPart = strings.ReplaceAll(decimalPart, "0", "")
-
-	if decimalPart == "" {
-		fmt.Printf("%.1f", value)
-		return nil, core.Error{}
-	}
-
-	return nil, core.Error{}
 }
 
 func (i Evaluator) VisitBinaryExpr(expr core.Binary) (any, core.Error) {
