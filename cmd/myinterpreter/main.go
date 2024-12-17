@@ -105,7 +105,7 @@ func printErrorsAndExit(errors []core.Error) {
 	}
 
 	for _, err := range errors {
-		printErrorAndExit(&err)
+		fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", err.Line, err.Err)
 	}
 
 	os.Exit(errors[0].ExitCode)
