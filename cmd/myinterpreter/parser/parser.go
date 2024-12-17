@@ -48,7 +48,7 @@ func isNextTokenSemicolon() *core.Error {
 	}
 
 	err := fmt.Errorf("Expect ';' after expression.")
-	return &core.Error{Line: current().Line, Err: err}
+	return &core.Error{Line: current().Line, Err: err, ExitCode: 65}
 }
 
 func statement() (core.Statement, *core.Error) {
@@ -198,7 +198,7 @@ func primary() (core.Expression, *core.Error) {
 
 	if !match(core.LEFT_PAREN) {
 		err := fmt.Errorf("Expect ')' after expression.")
-		return nil, &core.Error{Line: current().Line, Err: err}
+		return nil, &core.Error{Line: current().Line, Err: err, ExitCode: 65}
 	}
 
 	expr, err := expression()
@@ -207,12 +207,12 @@ func primary() (core.Expression, *core.Error) {
 	}
 
 	if expr == nil {
-		return nil, &core.Error{Line: current().Line, Err: fmt.Errorf("Empty group")}
+		return nil, &core.Error{Line: current().Line, Err: fmt.Errorf("Empty group"), ExitCode: 65}
 	}
 
 	if !match(core.RIGHT_PAREN) {
 		err := fmt.Errorf("Expect ')' after expression.")
-		return expr, &core.Error{Line: current().Line, Err: err}
+		return expr, &core.Error{Line: current().Line, Err: err, ExitCode: 65}
 	}
 
 	return core.Grouping{Expr: expr}, nil

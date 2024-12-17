@@ -26,21 +26,21 @@ func (i Evaluator) VisitBinaryExpr(expr core.Binary) (any, core.Error) {
 	case core.MINUS:
 		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers.")}
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers."), ExitCode: 70}
 		}
 		return left - right, core.Error{}
 
 	case core.STAR:
 		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers.")}
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers."), ExitCode: 70}
 		}
 		return left * right, core.Error{}
 
 	case core.SLASH:
 		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers.")}
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers."), ExitCode: 70}
 		}
 		return left / right, core.Error{}
 
@@ -53,35 +53,35 @@ func (i Evaluator) VisitBinaryExpr(expr core.Binary) (any, core.Error) {
 
 		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be two numbers or two strings.")}
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be two numbers or two strings."), ExitCode: 70}
 		}
 		return left + right, core.Error{}
 
 	case core.GREATER:
 		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers.")}
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers."), ExitCode: 70}
 		}
 		return left > right, core.Error{}
 
 	case core.GREATER_EQUAL:
 		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers.")}
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers."), ExitCode: 70}
 		}
 		return left >= right, core.Error{}
 
 	case core.LESS:
 		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers.")}
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers."), ExitCode: 70}
 		}
 		return left < right, core.Error{}
 
 	case core.LESS_EQUAL:
 		left, right, err := getMultipleFloat(expr.Operator, leftExpr, rightExpr)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers.")}
+			return nil, core.Error{Line: expr.Operator.Line, Err: fmt.Errorf("Operands must be numbers."), ExitCode: 70}
 		}
 		return left <= right, core.Error{}
 
@@ -119,7 +119,7 @@ func (i Evaluator) VisitUnaryExpr(expr core.Unary) (any, core.Error) {
 	case core.MINUS:
 		float, err := getFloat(expr.Operator, right)
 		if err != nil {
-			return nil, core.Error{Line: expr.Operator.Line, Err: err}
+			return nil, core.Error{Line: expr.Operator.Line, Err: err, ExitCode: 70}
 		}
 		return -float, core.Error{}
 

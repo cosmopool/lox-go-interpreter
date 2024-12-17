@@ -27,7 +27,7 @@ func main() {
 		tokens := tokenize(filename, false)
 		expressions, err := parser.ParseExpressions(tokens)
 		if err != nil {
-			printError(*err)
+			printErrorAndExit(err)
 			os.Exit(65)
 		}
 
@@ -41,7 +41,7 @@ func main() {
 		tokens := tokenize(filename, false)
 		expressions, err := parser.ParseExpressions(tokens)
 		if err != nil {
-			printError(*err)
+			printErrorAndExit(err)
 			os.Exit(65)
 		}
 
@@ -49,10 +49,7 @@ func main() {
 		evaluator := visitor.Evaluator{}
 		for _, expr := range expressions {
 			value, err := evaluator.Evaluate(expr)
-			if err.Err != nil {
-				printError(err)
-				os.Exit(70)
-			}
+			printErrorAndExit(&err)
 
 			if value == nil {
 				fmt.Println("nil")
@@ -64,19 +61,13 @@ func main() {
 	case "run":
 		tokens := tokenize(filename, false)
 		statements, err := parser.Parse(tokens)
-		if err != nil {
-			printError(*err)
-			os.Exit(65)
-		}
+		printErrorAndExit(err)
 
 		// visit expressions
 		interpreter := visitor.Interpreter{}
 		for _, expr := range statements {
 			_, err := interpreter.Interpret(expr)
-			if err.Err != nil {
-				printError(err)
-				os.Exit(70)
-			}
+			printErrorAndExit(&err)
 		}
 
 	default:
@@ -97,10 +88,7 @@ func tokenize(filename string, shouldPrintTokens bool) []core.Token {
 		printTokens(tokens)
 	}
 
-	if len(errors) > 0 {
-		printErrors(errors)
-		os.Exit(65)
-	}
+	printErrorsAndExit(errors)
 
 	return tokens
 }
@@ -111,12 +99,26 @@ func printTokens(tokens []core.Token) {
 	}
 }
 
-func printErrors(errors []core.Error) {
-	for _, err := range errors {
-		printError(err)
+func printErrorsAndExit(errors []core.Error) {
+	if len(errors) == 0 {
+		return
 	}
+
+	for _, err := range errors {
+		printErrorAndExit(&err)
+	}
+
+	os.Exit(errors[0].ExitCode)
 }
 
-func printError(error core.Error) {
+func printErrorAndExit(error *core.Error) {
+	if error == nil {
+		return
+	}
+	if error.Err == nil {
+		return
+	}
+
 	fmt.Fprintf(os.Stderr, "[line %d] Error: %v\n", error.Line, error.Err)
+	os.Exit(error.ExitCode)
 }

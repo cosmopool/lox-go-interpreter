@@ -103,7 +103,7 @@ func ScanFile(fileContents []byte) ([]core.Token, []core.Error) {
 			}
 
 			if position >= endOfFile {
-				reportError(line, fmt.Errorf("Unterminated string."))
+				reportError(line, 65, fmt.Errorf("Unterminated string."))
 				break
 			}
 
@@ -120,7 +120,7 @@ func ScanFile(fileContents []byte) ([]core.Token, []core.Error) {
 				tokenizeIdentifier()
 				continue
 			} else {
-				reportError(line, fmt.Errorf("Unexpected character: %s", string(character)))
+				reportError(line, 65, fmt.Errorf("Unexpected character: %s", string(character)))
 			}
 		}
 
@@ -132,8 +132,8 @@ func ScanFile(fileContents []byte) ([]core.Token, []core.Error) {
 	return tokens, errors
 }
 
-func reportError(line int, err error) {
-	errors = append(errors, core.Error{Line: line, Err: err})
+func reportError(line int, exitCode int, err error) {
+	errors = append(errors, core.Error{Line: line, Err: err, ExitCode: exitCode})
 }
 
 func advanceCursor() {

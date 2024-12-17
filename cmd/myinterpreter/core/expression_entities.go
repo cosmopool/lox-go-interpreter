@@ -42,4 +42,5 @@ func (u Unary) Accept(visitor ExpressionVisitor) (any, Error) {
 type Error struct {
 	Line int
 	Err  error
+  ExitCode int
 }
