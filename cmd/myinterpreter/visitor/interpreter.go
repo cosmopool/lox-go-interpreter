@@ -68,3 +68,18 @@ func (i Interpreter) VisitVarStmt(stmt core.VarStmt) (any, core.Error) {
 	i.environment.AddVariable(stmt.Name.Lexeme, value)
 	return nil, err
 }
+
+func (i *Interpreter) VisitBlockStmt(stmt core.BlockStmt) (any, core.Error) {
+	previousEnvironment := i.environment
+	i.environment = environment.CreateEnvironmentWithEnclosing(&i.environment)
+
+	for _, statement := range stmt.Statements {
+		_, err := statement.Accept(i)
+		if err.Err != nil {
+			return nil, err
+		}
+	}
+
+	i.environment = previousEnvironment
+	return nil, core.Error{}
+}

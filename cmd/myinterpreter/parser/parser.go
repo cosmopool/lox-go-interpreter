@@ -55,6 +55,9 @@ func statement() (core.Statement, *core.Error) {
 	if match(core.PRINT) {
 		return printStatement()
 	}
+	if match(core.LEFT_BRACE) {
+		return blockStatement()
+	}
 	return expressionStatement()
 }
 
@@ -103,6 +106,26 @@ func printStatement() (core.Statement, *core.Error) {
 	}
 
 	return core.PrintStmt{Expr: value}, nil
+}
+
+func blockStatement() (core.Statement, *core.Error) {
+	statements = []core.Statement{}
+
+	for current().Type != core.RIGHT_BRACE || !isAtEnd() {
+		advance()
+		statement, err := declaration()
+		if err != nil {
+			return nil, err
+		}
+		statements = append(statements, statement)
+	}
+
+	if current().Type != core.RIGHT_BRACE {
+		err := fmt.Errorf("Expect '}' after block.")
+		return nil, &core.Error{Line: current().Line, Err: err, ExitCode: 65}
+	}
+
+	return core.BlockStmt{Statements: statements}, nil
 }
 
 func expressionStatement() (core.Statement, *core.Error) {

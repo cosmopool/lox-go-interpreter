@@ -13,4 +13,5 @@ type StatementVisitor interface {
 	VisitExpressionStmt(stmt ExpressionStmt) (any, Error)
 	VisitPrintStmt(stmt PrintStmt) (any, Error)
 	VisitVarStmt(stmt VarStmt) (any, Error)
+	VisitBlockStmt(stmt BlockStmt) (any, Error)
 }
