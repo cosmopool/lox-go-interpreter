@@ -64,7 +64,7 @@ func main() {
 		printErrorAndExit(err)
 
 		// visit expressions
-		interpreter := visitor.Interpreter{}
+		interpreter := visitor.CreateInterpreter()
 		for _, expr := range statements {
 			_, err := interpreter.Interpret(expr)
 			printErrorAndExit(&err)

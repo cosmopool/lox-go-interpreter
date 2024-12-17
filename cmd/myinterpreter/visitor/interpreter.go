@@ -12,16 +12,22 @@ type Interpreter struct {
 	environment environment.Environment
 }
 
-func (i Interpreter) Interpret(expr core.Statement) (any, core.Error) {
+func CreateInterpreter() Interpreter {
+	return Interpreter{environment: environment.CreateEnvironment()}
+}
+
+func (i *Interpreter) Interpret(expr core.Statement) (any, core.Error) {
 	return expr.Accept(i)
 }
 
 func (i Interpreter) VisitExpressionStmt(stmt core.ExpressionStmt) (any, core.Error) {
-	return Evaluator{}.Evaluate(stmt.Expr)
+	evaluator := CreateEvaluatorWithEnvironment(&i.environment)
+	return evaluator.Evaluate(stmt.Expr)
 }
 
 func (i Interpreter) VisitPrintStmt(stmt core.PrintStmt) (any, core.Error) {
-	value, err := Evaluator{}.Evaluate(stmt.Expr)
+	evaluator := CreateEvaluatorWithEnvironment(&i.environment)
+	value, err := evaluator.Evaluate(stmt.Expr)
 	if err.Err != nil {
 		return nil, err
 	}
@@ -55,23 +61,25 @@ func (i Interpreter) VisitPrintStmt(stmt core.PrintStmt) (any, core.Error) {
 }
 
 func (i Interpreter) VisitVarStmt(stmt core.VarStmt) (any, core.Error) {
+	evaluator := CreateEvaluatorWithEnvironment(&i.environment)
 	var value any
 	var err core.Error
 
 	if stmt.Initializer != nil {
-		value, err = Evaluator{}.Evaluate(stmt.Initializer)
+		value, err = evaluator.Evaluate(stmt.Initializer)
 		if err.Err != nil {
 			return nil, err
 		}
 	}
 
 	i.environment.AddVariable(stmt.Name.Lexeme, value)
+
 	return nil, err
 }
 
 func (i *Interpreter) VisitBlockStmt(stmt core.BlockStmt) (any, core.Error) {
 	previousEnvironment := i.environment
-	i.environment = environment.CreateEnvironmentWithEnclosing(&i.environment)
+	i.environment = environment.CreateEnvironmentWithEnclosing(&previousEnvironment)
 
 	for _, statement := range stmt.Statements {
 		_, err := statement.Accept(i)

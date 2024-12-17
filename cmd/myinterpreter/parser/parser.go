@@ -111,8 +111,7 @@ func printStatement() (core.Statement, *core.Error) {
 func blockStatement() (core.Statement, *core.Error) {
 	statements = []core.Statement{}
 
-	for current().Type != core.RIGHT_BRACE || !isAtEnd() {
-		advance()
+	for current().Type != core.RIGHT_BRACE && !isAtEnd() {
 		statement, err := declaration()
 		if err != nil {
 			return nil, err
@@ -124,6 +123,7 @@ func blockStatement() (core.Statement, *core.Error) {
 		err := fmt.Errorf("Expect '}' after block.")
 		return nil, &core.Error{Line: current().Line, Err: err, ExitCode: 65}
 	}
+	advance()
 
 	return core.BlockStmt{Statements: statements}, nil
 }

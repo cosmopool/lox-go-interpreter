@@ -107,3 +107,8 @@ func (p PrinterVisitor) VisitAssignExpr(expr core.Assign) (any, core.Error) {
 	fmt.Println(str)
 	return str, core.Error{}
 }
+
+// VisitBlockStmt implements core.StatementVisitor.
+func (p PrinterVisitor) VisitBlockStmt(stmt core.BlockStmt) (any, core.Error) {
+	panic("unimplemented")
+}

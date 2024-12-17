@@ -8,7 +8,20 @@ import (
 )
 
 type Evaluator struct {
-	environment environment.Environment
+	environment *environment.Environment
+}
+
+func CreateEvaluator() Evaluator {
+	env := environment.CreateEnvironment()
+	return Evaluator{environment: &env}
+}
+
+func CreateEvaluatorWithEnvironment(env *environment.Environment) Evaluator {
+	if env == nil {
+		panic("nil pointer to enclosing Environment")
+	}
+
+	return Evaluator{environment: env}
 }
 
 func (e Evaluator) Evaluate(expr core.Expression) (any, core.Error) {
