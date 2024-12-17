@@ -97,3 +97,13 @@ func (p PrinterVisitor) VisitVariableExpr(expr core.Variable) (any, core.Error) 
 	fmt.Println(str)
 	return str, core.Error{}
 }
+
+func (p PrinterVisitor) VisitAssignExpr(expr core.Assign) (any, core.Error) {
+	str, err := p.stringifyVisitor.VisitAssignExpr(expr)
+	if err.Err != nil {
+		return nil, err
+	}
+
+	fmt.Println(str)
+	return str, core.Error{}
+}

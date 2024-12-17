@@ -139,7 +139,20 @@ func (i Evaluator) VisitVariableExpr(expr core.Variable) (any, core.Error) {
 	}
 
 	return value, core.Error{}
-	// return nil, core.Error{}
+}
+
+func (i Evaluator) VisitAssignExpr(expr core.Assign) (any, core.Error) {
+	value, err := expr.Value.Accept(i)
+	if err.Err != nil {
+		return nil, err
+	}
+
+	assignErr := environment.AssignVariable(expr.Name.Lexeme, value, expr.Name.Line)
+	if assignErr != nil {
+		return nil, *assignErr
+	}
+
+	return value, core.Error{}
 }
 
 func isTruthy(value any) bool {

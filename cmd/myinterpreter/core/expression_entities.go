@@ -47,6 +47,15 @@ func (v Variable) Accept(visitor ExpressionVisitor) (any, Error) {
 	return visitor.VisitVariableExpr(v)
 }
 
+type Assign struct {
+	Name Token
+	Value Expression
+}
+
+func (v Assign) Accept(visitor ExpressionVisitor) (any, Error) {
+	return visitor.VisitAssignExpr(v)
+}
+
 type Error struct {
 	Line     int
 	Err      error

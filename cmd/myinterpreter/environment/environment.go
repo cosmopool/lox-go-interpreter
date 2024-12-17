@@ -20,3 +20,12 @@ func GetVariable(token core.Token) (any, core.Error) {
 func AddVariable(name string, value any) {
 	variables[name] = value
 }
+
+func AssignVariable(name string, value any, line int) *core.Error {
+	if _, ok := variables[name]; ok {
+		variables[name] = value
+		return nil
+	}
+
+	return &core.Error{Line: line, Err: fmt.Errorf("Undefined variable '" + name + "'."), ExitCode: 70}
+}

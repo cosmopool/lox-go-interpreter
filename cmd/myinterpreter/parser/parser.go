@@ -120,7 +120,29 @@ func expressionStatement() (core.Statement, *core.Error) {
 }
 
 func expression() (core.Expression, *core.Error) {
-	return equality()
+	return assignment()
+}
+
+func assignment() (core.Expression, *core.Error) {
+	expr, err := equality()
+	if err != nil {
+		return nil, err
+	}
+
+	if match(core.EQUAL) {
+		value, err := assignment()
+		if err != nil {
+			return nil, err
+		}
+
+		if variableExpr, ok := expr.(core.Variable); ok {
+			return core.Assign{Name: variableExpr.Name, Value: value}, nil
+		}
+
+		return nil, &core.Error{Line: current().Line, Err: fmt.Errorf("Invalid assignment target."), ExitCode: 65}
+	}
+
+	return expr, nil
 }
 
 func equality() (core.Expression, *core.Error) {

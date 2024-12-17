@@ -108,3 +108,13 @@ func (p StringifyVisitor) VisitVariableExpr(expr core.Variable) (any, core.Error
 	str := fmt.Sprintf("(%s %v)", expr.Name.Lexeme, value)
 	return str, core.Error{}
 }
+
+func (p StringifyVisitor) VisitAssignExpr(expr core.Assign) (any, core.Error) {
+	value, err := expr.Accept(p)
+	if err.Err != nil {
+		return nil, err
+	}
+
+	str := fmt.Sprintf("(%s %v)", expr.Name.Lexeme, value)
+	return str, core.Error{}
+}

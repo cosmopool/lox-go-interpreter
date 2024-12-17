@@ -6,6 +6,7 @@ type ExpressionVisitor interface {
 	VisitLiteralExpr(expr Literal) (any, Error)
 	VisitUnaryExpr(expr Unary) (any, Error)
 	VisitVariableExpr(expr Variable) (any, Error)
+	VisitAssignExpr(expr Assign) (any, Error)
 }
 
 type StatementVisitor interface {
