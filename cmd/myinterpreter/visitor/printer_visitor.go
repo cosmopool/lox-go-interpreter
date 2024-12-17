@@ -28,6 +28,16 @@ func (p PrinterVisitor) VisitExpressionStmt(stmt core.ExpressionStmt) (any, core
 	return str, core.Error{}
 }
 
+func (p PrinterVisitor) VisitVarStmt(stmt core.VarStmt) (any, core.Error) {
+	str, err := p.stringifyVisitor.VisitVarStmt(stmt)
+	if err.Err != nil {
+		return nil, err
+	}
+
+	fmt.Println(str)
+	return str, core.Error{}
+}
+
 func (p PrinterVisitor) VisitPrintStmt(stmt core.PrintStmt) (any, core.Error) {
 	str, err := p.stringifyVisitor.VisitPrintStmt(stmt)
 	if err.Err != nil {
@@ -70,6 +80,16 @@ func (p PrinterVisitor) VisitLiteralExpr(expr core.Literal) (any, core.Error) {
 
 func (p PrinterVisitor) VisitUnaryExpr(expr core.Unary) (any, core.Error) {
 	str, err := p.stringifyVisitor.VisitUnaryExpr(expr)
+	if err.Err != nil {
+		return nil, err
+	}
+
+	fmt.Println(str)
+	return str, core.Error{}
+}
+
+func (p PrinterVisitor) VisitVariableExpr(expr core.Variable) (any, core.Error) {
+	str, err := p.stringifyVisitor.VisitVariableExpr(expr)
 	if err.Err != nil {
 		return nil, err
 	}

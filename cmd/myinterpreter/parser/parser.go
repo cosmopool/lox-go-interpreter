@@ -58,6 +58,39 @@ func statement() (core.Statement, *core.Error) {
 	return expressionStatement()
 }
 
+func declaration() (core.Statement, *core.Error) {
+	if match(core.VAR) {
+		return varDeclaration()
+	}
+	return statement()
+}
+
+func varDeclaration() (core.Statement, *core.Error) {
+	var err *core.Error
+
+	var name core.Token
+	if match(core.IDENTIFIER) {
+		name = previous()
+	} else {
+		return nil, &core.Error{Line: current().Line, Err: fmt.Errorf("Expect variable name."), ExitCode: 65}
+	}
+
+	var initializer core.Expression
+	if match(core.EQUAL) {
+		initializer, err = expression()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = isNextTokenSemicolon()
+	if err != nil {
+		return nil, err
+	}
+
+	return core.VarStmt{Name: name, Initializer: initializer}, nil
+}
+
 func printStatement() (core.Statement, *core.Error) {
 	value, err := expression()
 	if err != nil {
@@ -196,6 +229,10 @@ func primary() (core.Expression, *core.Error) {
 		return core.Literal{Value: previous().Literal}, nil
 	}
 
+	if match(core.IDENTIFIER) {
+		return core.Variable{Name: previous()}, nil
+	}
+
 	if !match(core.LEFT_PAREN) {
 		err := fmt.Errorf("Expect ')' after expression.")
 		return nil, &core.Error{Line: current().Line, Err: err, ExitCode: 65}
@@ -221,7 +258,7 @@ func primary() (core.Expression, *core.Error) {
 func Parse(scannedTokens []core.Token) ([]core.Statement, *core.Error) {
 	tokens = scannedTokens
 	for !isAtEnd() {
-		stmt, err := statement()
+		stmt, err := declaration()
 		if err != nil {
 			return statements, err
 		}

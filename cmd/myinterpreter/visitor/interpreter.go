@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/environment"
 )
 
 type Interpreter struct{}
@@ -49,4 +50,19 @@ func (i Interpreter) VisitPrintStmt(stmt core.PrintStmt) (any, core.Error) {
 	}
 
 	return nil, core.Error{}
+}
+
+func (i Interpreter) VisitVarStmt(stmt core.VarStmt) (any, core.Error) {
+	var value any
+	var err core.Error
+
+	if stmt.Initializer != nil {
+		value, err = Evaluator{}.Evaluate(stmt.Initializer)
+		if err.Err != nil {
+			return nil, err
+		}
+	}
+
+  environment.AddVariable(stmt.Name.Lexeme, value)
+	return nil, err
 }

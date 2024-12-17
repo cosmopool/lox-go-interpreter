@@ -19,6 +19,16 @@ func (p StringifyVisitor) VisitExpressionStmt(stmt core.ExpressionStmt) (any, co
 	return str, core.Error{}
 }
 
+func (p StringifyVisitor) VisitVarStmt(stmt core.VarStmt) (any, core.Error) {
+	str, err := stmt.Initializer.Accept(p)
+	if err.Err != nil {
+		return nil, err
+	}
+
+	fmt.Println(str)
+	return str, core.Error{}
+}
+
 func (p StringifyVisitor) VisitPrintStmt(stmt core.PrintStmt) (any, core.Error) {
 	str, err := stmt.Expr.Accept(p)
 	if err.Err != nil {
@@ -86,5 +96,15 @@ func (p StringifyVisitor) VisitUnaryExpr(expr core.Unary) (any, core.Error) {
 	}
 
 	str := fmt.Sprintf("(%s %v)", expr.Operator.Lexeme, right)
+	return str, core.Error{}
+}
+
+func (p StringifyVisitor) VisitVariableExpr(expr core.Variable) (any, core.Error) {
+	value, err := expr.Accept(p)
+	if err.Err != nil {
+		return nil, err
+	}
+
+	str := fmt.Sprintf("(%s %v)", expr.Name.Lexeme, value)
 	return str, core.Error{}
 }

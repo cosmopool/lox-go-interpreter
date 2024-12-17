@@ -19,3 +19,12 @@ type PrintStmt struct {
 func (s PrintStmt) Accept(visitor StatementVisitor) (any, Error) {
 	return visitor.VisitPrintStmt(s)
 }
+
+type VarStmt struct {
+	Name Token
+	Initializer Expression
+}
+
+func (s VarStmt) Accept(visitor StatementVisitor) (any, Error) {
+	return visitor.VisitVarStmt(s)
+}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/environment"
 )
 
 type Evaluator struct{}
@@ -129,6 +130,16 @@ func (i Evaluator) VisitUnaryExpr(expr core.Unary) (any, core.Error) {
 	default:
 		return nil, core.Error{}
 	}
+}
+
+func (i Evaluator) VisitVariableExpr(expr core.Variable) (any, core.Error) {
+	value, err := environment.GetVariable(expr.Name)
+	if err.Err != nil {
+		return nil, err
+	}
+
+	return value, core.Error{}
+	// return nil, core.Error{}
 }
 
 func isTruthy(value any) bool {

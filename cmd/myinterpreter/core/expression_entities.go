@@ -39,8 +39,16 @@ func (u Unary) Accept(visitor ExpressionVisitor) (any, Error) {
 	return visitor.VisitUnaryExpr(u)
 }
 
+type Variable struct {
+	Name Token
+}
+
+func (v Variable) Accept(visitor ExpressionVisitor) (any, Error) {
+	return visitor.VisitVariableExpr(v)
+}
+
 type Error struct {
-	Line int
-	Err  error
-  ExitCode int
+	Line     int
+	Err      error
+	ExitCode int
 }
