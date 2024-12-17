@@ -109,14 +109,14 @@ func printStatement() (core.Statement, *core.Error) {
 }
 
 func blockStatement() (core.Statement, *core.Error) {
-	statements = []core.Statement{}
+	blockStatements := []core.Statement{}
 
 	for current().Type != core.RIGHT_BRACE && !isAtEnd() {
 		statement, err := declaration()
 		if err != nil {
 			return nil, err
 		}
-		statements = append(statements, statement)
+		blockStatements = append(blockStatements, statement)
 	}
 
 	if current().Type != core.RIGHT_BRACE {
@@ -125,7 +125,7 @@ func blockStatement() (core.Statement, *core.Error) {
 	}
 	advance()
 
-	return core.BlockStmt{Statements: statements}, nil
+	return core.BlockStmt{Statements: blockStatements}, nil
 }
 
 func expressionStatement() (core.Statement, *core.Error) {
