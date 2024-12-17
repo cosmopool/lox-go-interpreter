@@ -8,7 +8,9 @@ import (
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/environment"
 )
 
-type Interpreter struct{}
+type Interpreter struct {
+	environment environment.Environment
+}
 
 func (i Interpreter) Interpret(expr core.Statement) (any, core.Error) {
 	return expr.Accept(i)
@@ -63,6 +65,6 @@ func (i Interpreter) VisitVarStmt(stmt core.VarStmt) (any, core.Error) {
 		}
 	}
 
-  environment.AddVariable(stmt.Name.Lexeme, value)
+	i.environment.AddVariable(stmt.Name.Lexeme, value)
 	return nil, err
 }

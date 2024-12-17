@@ -6,26 +6,41 @@ import (
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 )
 
-var variables = map[string]any{}
+type Environment struct {
+	variables map[string]any
+	enclosing *Environment
+}
 
-func GetVariable(token core.Token) (any, core.Error) {
-	value, ok := variables[token.Lexeme]
-	if !ok {
-		return nil, core.Error{Line: token.Line, Err: fmt.Errorf("Undefined variable '" + token.Lexeme + "'."), ExitCode: 70}
+func CreateEnvironmentWithEnclosing(environment *Environment) Environment {
+	return Environment{enclosing: environment}
+}
+
+func (e *Environment) GetVariable(token *core.Token) (any, core.Error) {
+	value, ok := e.variables[token.Lexeme]
+	if ok {
+		return value, core.Error{}
 	}
 
-	return value, core.Error{}
+	if e.enclosing != nil {
+		return e.enclosing.GetVariable(token)
+	}
+
+	return nil, core.Error{Line: token.Line, Err: fmt.Errorf("Undefined variable '" + token.Lexeme + "'."), ExitCode: 70}
 }
 
-func AddVariable(name string, value any) {
-	variables[name] = value
+func (e *Environment) AddVariable(name string, value any) {
+	e.variables[name] = value
 }
 
-func AssignVariable(name string, value any, line int) *core.Error {
-	if _, ok := variables[name]; ok {
-		variables[name] = value
+func (e *Environment) AssignVariable(token *core.Token, value any) *core.Error {
+	if _, ok := e.variables[token.Lexeme]; ok {
+		e.variables[token.Lexeme] = value
 		return nil
 	}
 
-	return &core.Error{Line: line, Err: fmt.Errorf("Undefined variable '" + name + "'."), ExitCode: 70}
+	if e.enclosing != nil {
+		return e.enclosing.AssignVariable(token, value)
+	}
+
+	return &core.Error{Line: token.Line, Err: fmt.Errorf("Undefined variable '" + token.Lexeme + "'."), ExitCode: 70}
 }

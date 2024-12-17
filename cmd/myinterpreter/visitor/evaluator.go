@@ -7,18 +7,20 @@ import (
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/environment"
 )
 
-type Evaluator struct{}
-
-func (i Evaluator) Evaluate(expr core.Expression) (any, core.Error) {
-	return expr.Accept(i)
+type Evaluator struct {
+	environment environment.Environment
 }
 
-func (i Evaluator) VisitBinaryExpr(expr core.Binary) (any, core.Error) {
-	rightExpr, err := expr.Right.Accept(i)
+func (e Evaluator) Evaluate(expr core.Expression) (any, core.Error) {
+	return expr.Accept(e)
+}
+
+func (e Evaluator) VisitBinaryExpr(expr core.Binary) (any, core.Error) {
+	rightExpr, err := expr.Right.Accept(e)
 	if err.Err != nil {
 		return nil, err
 	}
-	leftExpr, err := expr.Left.Accept(i)
+	leftExpr, err := expr.Left.Accept(e)
 	if err.Err != nil {
 		return nil, err
 	}
@@ -97,8 +99,8 @@ func (i Evaluator) VisitBinaryExpr(expr core.Binary) (any, core.Error) {
 	}
 }
 
-func (i Evaluator) VisitGroupExpr(expr core.Grouping) (any, core.Error) {
-	value, err := expr.Expr.Accept(i)
+func (e Evaluator) VisitGroupExpr(expr core.Grouping) (any, core.Error) {
+	value, err := expr.Expr.Accept(e)
 	if err.Err != nil {
 		return nil, err
 	}
@@ -106,12 +108,12 @@ func (i Evaluator) VisitGroupExpr(expr core.Grouping) (any, core.Error) {
 	return value, core.Error{}
 }
 
-func (i Evaluator) VisitLiteralExpr(expr core.Literal) (any, core.Error) {
+func (e Evaluator) VisitLiteralExpr(expr core.Literal) (any, core.Error) {
 	return expr.Value, core.Error{}
 }
 
-func (i Evaluator) VisitUnaryExpr(expr core.Unary) (any, core.Error) {
-	right, err := expr.Right.Accept(i)
+func (e Evaluator) VisitUnaryExpr(expr core.Unary) (any, core.Error) {
+	right, err := expr.Right.Accept(e)
 	if err.Err != nil {
 		return nil, err
 	}
@@ -132,8 +134,8 @@ func (i Evaluator) VisitUnaryExpr(expr core.Unary) (any, core.Error) {
 	}
 }
 
-func (i Evaluator) VisitVariableExpr(expr core.Variable) (any, core.Error) {
-	value, err := environment.GetVariable(expr.Name)
+func (e Evaluator) VisitVariableExpr(expr core.Variable) (any, core.Error) {
+	value, err := e.environment.GetVariable(&expr.Name)
 	if err.Err != nil {
 		return nil, err
 	}
@@ -141,13 +143,13 @@ func (i Evaluator) VisitVariableExpr(expr core.Variable) (any, core.Error) {
 	return value, core.Error{}
 }
 
-func (i Evaluator) VisitAssignExpr(expr core.Assign) (any, core.Error) {
-	value, err := expr.Value.Accept(i)
+func (e Evaluator) VisitAssignExpr(expr core.Assign) (any, core.Error) {
+	value, err := expr.Value.Accept(e)
 	if err.Err != nil {
 		return nil, err
 	}
 
-	assignErr := environment.AssignVariable(expr.Name.Lexeme, value, expr.Name.Line)
+	assignErr := e.environment.AssignVariable(&expr.Name, value)
 	if assignErr != nil {
 		return nil, *assignErr
 	}
